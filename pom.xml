@@ -15,6 +15,7 @@
 		<module>ecom-order</module>
 		<module>ecom-product</module>
 		<module>ecom-ware</module>
+		<module>renren-fast</module>
 	</modules>
 
 

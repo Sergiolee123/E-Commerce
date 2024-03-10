@@ -5,6 +5,10 @@
 	<groupId>com.ecom</groupId>
 	<artifactId>ecom-mail</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+	<properties>
+		<maven.compiler.source>8</maven.compiler.source>
+		<maven.compiler.target>8</maven.compiler.target>
+	</properties>
 	<name>ecom-mail</name>
 	<description>ecom-mail</description>
 	<packaging>pom</packaging>
@@ -16,6 +20,8 @@
 		<module>ecom-product</module>
 		<module>ecom-ware</module>
 		<module>renren-fast</module>
+		<module>renren-generator</module>
+		<module>ecom-common</module>
 	</modules>
 
 

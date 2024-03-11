@@ -11,7 +11,7 @@ import java.util.Map;
  *
  * @author Sergiolee123
  * @email lee.sergio.hk@gmail.com
- * @date 2024-03-11 21:16:42
+ * @date 2024-03-11 22:47:41
  */
 public interface SkuFullReductionService extends IService<SkuFullReductionEntity> {
 

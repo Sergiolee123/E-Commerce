@@ -151,7 +151,7 @@
 		</plugins>
 	</build>
 
-<!--	<repositories>
+	<repositories>
 		<repository>
 			<id>public</id>
 			<name>aliyun nexus</name>
@@ -161,7 +161,7 @@
 			</releases>
 		</repository>
 	</repositories>
-	<pluginRepositories>
+<!--	<pluginRepositories>
 		<pluginRepository>
 			<id>public</id>
 			<name>aliyun nexus</name>

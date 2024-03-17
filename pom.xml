@@ -22,6 +22,7 @@
 		<module>renren-fast</module>
 		<module>renren-generator</module>
 		<module>ecom-common</module>
+		<module>ecom-gateway</module>
 	</modules>
 
 

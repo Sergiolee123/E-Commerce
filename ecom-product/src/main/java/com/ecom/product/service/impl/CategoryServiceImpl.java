@@ -10,8 +10,8 @@ import com.ecom.product.entity.CategoryEntity;
 import com.ecom.product.service.CategoryService;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Service("categoryService")
@@ -29,9 +29,31 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 
     @Override
     public List<CategoryEntity> listWithTree() {
-        List<CategoryEntity> entities = baseMapper.selectList(null);
+        List<CategoryEntity> entities = baseMapper.selectList(new QueryWrapper<CategoryEntity>()
+                .orderByAsc("parent_cid", "cat_level", "cat_id"));
+        Map<Long, CategoryEntity> groupMap = new LinkedHashMap<>();
+        List<CategoryEntity> results = new ArrayList<>();
+        //use hashmap to combine parent and sub menus
+        for (CategoryEntity ce : entities) {
 
-        return null;
+            groupMap.put(ce.getCatId(), ce); // add menus to map, use catId as key for grouping sub menus
+
+            if (ce.getParentCid() == 0) { //skip grouping for parent menus
+                results.add(ce);
+                continue;
+            }
+
+            groupMap.merge(ce.getParentCid(), ce, (c1, c2) -> {
+                c1.addChildren(c2); //add sub menus to parent menus where sub menus parentCid = parent menus catId
+                return c1;
+            });
+        }
+        // sort the main menus by sorting field
+        return results
+                .stream()
+                .filter(c -> c.getParentCid() == 0)
+                .sorted(Comparator.comparingInt(CategoryEntity::getSort))
+                .collect(Collectors.toList());
     }
 
 }

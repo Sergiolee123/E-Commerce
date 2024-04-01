@@ -1,11 +1,15 @@
 package com.ecom.product.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Data;
 
 import java.io.Serializable;
-import java.util.Date;
-import lombok.Data;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 商品三级分类
@@ -57,4 +61,23 @@ public class CategoryEntity implements Serializable {
 	 */
 	private Integer productCount;
 
+	// Add exist = false to let mybatis plus ignore this field
+	@TableField(exist = false)
+	private List<CategoryEntity> children;
+
+	public Integer getSort() {
+		return sort==null?0:sort;
+	}
+
+	public void addChildren(CategoryEntity categoryEntity){
+		// user treeMap to perform sorting by sort field
+		if(this.children == null){
+			this.children = new ArrayList<>();
+		}
+		this.children.add(categoryEntity);
+	}
+
+	public List<CategoryEntity> getChildren() {
+		return children == null? null: children.stream().sorted(Comparator.comparingInt(CategoryEntity::getSort)).collect(Collectors.toList());
+	}
 }

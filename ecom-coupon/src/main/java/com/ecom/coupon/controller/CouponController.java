@@ -1,21 +1,15 @@
 package com.ecom.coupon.controller;
 
-import java.util.Arrays;
-import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.context.config.annotation.RefreshScope;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.ecom.coupon.entity.CouponEntity;
-import com.ecom.coupon.service.CouponService;
 import com.ecom.common.utils.PageUtils;
 import com.ecom.common.utils.R;
+import com.ecom.coupon.entity.CouponEntity;
+import com.ecom.coupon.service.CouponService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Arrays;
+import java.util.Map;
 
 
 
@@ -32,24 +26,6 @@ import com.ecom.common.utils.R;
 public class CouponController {
     @Autowired
     private CouponService couponService;
-
-    @Value("${c.user.name}")
-    private String name;
-
-    @Value("${user.age}")
-    private Integer age;
-
-    @RequestMapping("/test")
-    public R test(){
-        return R.ok().put("name", name).put("age", age);
-    }
-
-    @RequestMapping("/member/list")
-    public R memberCoupons(){
-        CouponEntity couponEntity = new CouponEntity();
-        couponEntity.setCouponName("recap 10 for 100");
-        return R.ok().put("coupons", Arrays.asList(couponEntity));
-    }
 
     /**
      * 列表

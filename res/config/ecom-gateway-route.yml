@@ -1,0 +1,8 @@
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: coupon_route
+          uri: lb://ecom-coupon
+          predicates:
+            - Path=/coupon/coupon/**

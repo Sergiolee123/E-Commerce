@@ -1,16 +1,18 @@
 <template lang="">
     <div>
-        <el-tree :data="menus" :props="defaultProps" @node-click="handleNodeClick">
+        <el-tree :data="menus" show-checkbox node-key="catId" :props="defaultProps" @node-click="handleNodeClick" :expand-on-click-node=false>
             <span class="custom-tree-node" slot-scope="{ node, data }">
         <span>{{ node.label }}</span>
         <span>
           <el-button
+            v-if="node.level<=2"
             type="text"
             size="mini"
             @click="() => append(data)">
             Append
           </el-button>
           <el-button
+            v-if="node.childNodes.length === 0"
             type="text"
             size="mini"
             @click="() => remove(node, data)">
@@ -34,9 +36,6 @@ export default {
         };
     },
     methods: {
-        handleNodeClick(data) {
-            console.log(data);
-        },
         getMenus() {
             this.$http({
                 url: this.$http.adornUrl('/product/category/list/tree'),

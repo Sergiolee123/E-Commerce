@@ -1,6 +1,6 @@
 <template lang="">
     <div>
-        <el-tree :data="menus" show-checkbox node-key="catId" :props="defaultProps" @node-click="handleNodeClick" :expand-on-click-node=false>
+        <el-tree :data="menus" show-checkbox node-key="catId" :default-expanded-keys="expendedKeys" :props="defaultProps" @node-click="handleNodeClick" :expand-on-click-node=false>
             <span class="custom-tree-node" slot-scope="{ node, data }">
         <span>{{ node.label }}</span>
         <span>
@@ -29,6 +29,7 @@ export default {
   data() {
     return {
       menus: [],
+      expendedKeys: [],
       defaultProps: {
         children: 'children',
         label: 'name'
@@ -84,15 +85,16 @@ export default {
           });
 
           this.getMenus();
+          this.expendedKeys = [node.parent.data.catId]
         } else {
           throw new Error(data.code);
         }
       }).catch(() => {
-          this.$message({
-            type: 'info',
-            message: 'Delete canceled'
-          });
+        this.$message({
+          type: 'info',
+          message: 'Delete canceled'
         });
+      });
 
     }
   },

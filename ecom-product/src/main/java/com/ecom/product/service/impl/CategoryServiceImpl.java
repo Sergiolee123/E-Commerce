@@ -51,7 +51,6 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         // sort the main menus by sorting field
         return results
                 .stream()
-                .filter(c -> c.getParentCid() == 0)
                 .sorted(Comparator.comparingInt(CategoryEntity::getSort))
                 .collect(Collectors.toList());
     }

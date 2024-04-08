@@ -193,10 +193,11 @@ export default {
         },
         editCategory() {
             this.dialogVisible = false
+            let {catId, name, icon, productUnit} = this.category
             this.$http({
                 url: this.$http.adornUrl('/product/category/update'),
                 method: 'post',
-                data: this.$http.adornData(this.category, false)
+                data: this.$http.adornData({catId, name, icon, productUnit}, false)
             }).then(({ data }) => {
 
                 console.log(data)
@@ -204,7 +205,7 @@ export default {
                     console.log("success")
                     this.$message({
                         type: 'success',
-                        message: 'Append completed'
+                        message: 'Edit completed'
                     });
                     this.getMenus();
                     this.expendedKeys = [this.category.parentCid]

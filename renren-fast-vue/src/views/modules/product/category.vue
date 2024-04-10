@@ -1,6 +1,6 @@
 <template lang="">
     <div>
-        <el-tree :data="menus" show-checkbox node-key="catId" :default-expanded-keys="expendedKeys" :props="defaultProps" @node-click="handleNodeClick" :expand-on-click-node=false>
+        <el-tree :data="menus" draggable :allow-drop="allowDrop" show-checkbox node-key="catId" :default-expanded-keys="expendedKeys" :props="defaultProps" @node-click="handleNodeClick" :expand-on-click-node=false>
             <span class="custom-tree-node" slot-scope="{ node, data }">
         <span>{{ node.label }}</span>
         <span>
@@ -193,11 +193,11 @@ export default {
         },
         editCategory() {
             this.dialogVisible = false
-            let {catId, name, icon, productUnit} = this.category
+            let { catId, name, icon, productUnit } = this.category
             this.$http({
                 url: this.$http.adornUrl('/product/category/update'),
                 method: 'post',
-                data: this.$http.adornData({catId, name, icon, productUnit}, false)
+                data: this.$http.adornData({ catId, name, icon, productUnit }, false)
             }).then(({ data }) => {
 
                 console.log(data)
@@ -229,6 +229,23 @@ export default {
             if (this.dialogType === "edit") {
                 this.editCategory();
             }
+        },
+        allowDrop(draggingNode, dropNode, type) {
+            let count = this.findDeepestLevel(draggingNode.data)
+            if(type === "inner"){
+                return dropNode.level * 1 + count <= 3
+            }
+            return dropNode.parent.level * 1 + count <= 3
+        },
+        findDeepestLevel(node) {
+            if (node.children == null || node.children.length === 0) {
+                return 1
+            }
+            let max = 0
+            for (let n of node.children) {
+                max = Math.max(max, this.findDeepestLevel(n))
+            }
+            return max + 1
         }
     },
     created() {

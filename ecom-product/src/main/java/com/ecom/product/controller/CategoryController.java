@@ -70,6 +70,14 @@ public class CategoryController {
         return R.ok();
     }
 
+    @RequestMapping("/update/sort")
+    //@RequiresPermissions("product:category:update")
+    public R update(@RequestBody List<CategoryEntity> categories){
+        categoryService.updateBatchById(categories);
+
+        return R.ok();
+    }
+
     /**
      * 修改
      */

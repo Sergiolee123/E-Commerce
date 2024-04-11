@@ -1,6 +1,6 @@
 <template lang="">
     <div>
-        <el-tree :data="menus" draggable :allow-drop="allowDrop" show-checkbox node-key="catId" :default-expanded-keys="expendedKeys" :props="defaultProps" @node-click="handleNodeClick" :expand-on-click-node=false>
+        <el-tree :data="menus" draggable :allow-drop="allowDrop" @node-drop="handleDrop" show-checkbox node-key="catId" :default-expanded-keys="expendedKeys" :props="defaultProps" @node-click="handleNodeClick" :expand-on-click-node=false>
             <span class="custom-tree-node" slot-scope="{ node, data }">
         <span>{{ node.label }}</span>
         <span>
@@ -151,7 +151,6 @@ export default {
             }).then(({ data }) => {
                 if (data && data.code === 0) {
                     this.category = { ...data.data }
-                    console.log(this.category)
                     this.dialogVisible = true
                 } else {
                     throw new Error("fetch data fail");
@@ -200,7 +199,6 @@ export default {
                 data: this.$http.adornData({ catId, name, icon, productUnit }, false)
             }).then(({ data }) => {
 
-                console.log(data)
                 if (data && data.code === 0) {
                     console.log("success")
                     this.$message({
@@ -232,7 +230,7 @@ export default {
         },
         allowDrop(draggingNode, dropNode, type) {
             let count = this.findDeepestLevel(draggingNode.data)
-            if(type === "inner"){
+            if (type === "inner") {
                 return dropNode.level * 1 + count <= 3
             }
             return dropNode.parent.level * 1 + count <= 3
@@ -246,6 +244,94 @@ export default {
                 max = Math.max(max, this.findDeepestLevel(n))
             }
             return max + 1
+        },
+        handleDrop(draggingNode, dropNode, dropType, ev) {
+            let pCid = 0
+            let siblings = null
+            let updateNodes = []
+
+            if (dropType === "inner") {
+                pCid = dropNode.data.catId
+                siblings = dropNode.childNodes
+            } else {
+                pCid = dropNode.parent.data.catId === undefined ? 0 : dropNode.parent.data.catId
+                siblings = dropNode.parent.childNodes
+            }
+
+            for (let i = 0; i < siblings.length; i++) {
+
+                if (siblings[i].data.catId === draggingNode.data.catId) {
+                    updateNodes.push({
+                        catId: siblings[i].data.catId,
+                        sort: i,
+                        parentCid: pCid,
+                        catLevel: siblings[i].level
+                    })
+
+                    if (siblings[i].level != draggingNode.data.catLevel) {
+                        this.updateChildNodesLevel(siblings[i].childNodes, updateNodes)
+                    }
+
+                } else {
+                    updateNodes.push({
+                        catId: siblings[i].data.catId,
+                        sort: i
+                    })
+                }
+
+                console.log(updateNodes)
+            }
+            
+            this.updateByList(updateNodes)
+
+        },
+        updateChildNodesLevel(siblings, updateNodes) {
+
+            if (siblings == null || siblings.length === 0) {
+                return
+            }
+
+            for (let i = 0; i < siblings.length; i++) {
+
+
+                updateNodes.push({
+                    catId: siblings[i].data.catId,
+                    sort: i,
+                    catLevel: siblings[i].level
+                })
+
+                this.updateChildNodesLevel(siblings[i].childNodes, updateNodes)
+
+            }
+        },
+        updateByList(nodes){
+
+                this.$http({
+                url: this.$http.adornUrl('/product/category/update/sort'),
+                method: 'post',
+                data: this.$http.adornData(nodes, false)
+            }).then(({ data }) => {
+
+                if (data && data.code === 0) {
+                    console.log("success")
+                    this.$message({
+                        type: 'success',
+                        message: 'Edit tree completed'
+                    });
+                    this.getMenus();
+                } else {
+                    console.log("fail")
+                    throw new Error(data.code);
+                }
+
+            }).catch((data) => {
+                this.$message({
+                    type: 'error',
+                    message: 'System error, edit tree canceled'
+                });
+                console.error(data)
+            })
+            
         }
     },
     created() {

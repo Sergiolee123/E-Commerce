@@ -1,6 +1,19 @@
 <template lang="">
     <div>
-        <el-tree :data="menus" draggable :allow-drop="allowDrop" @node-drop="handleDrop" show-checkbox node-key="catId" :default-expanded-keys="expendedKeys" :props="defaultProps" @node-click="handleNodeClick" :expand-on-click-node=false>
+        <el-switch v-model="enableDrag" inactive-text="enable drag" :disabled="enableSelect">
+        </el-switch>
+
+        <el-button v-if="!enableSelect" @click="enableSelect=true" :disabled="enableDrag" type="primary">Batch delete</el-button>
+
+        <el-button v-if="enableDrag" @click="updateSorting" type="success" :loading="startLoading">update</el-button>
+
+        <span v-if="!enableDrag">
+            <el-button v-if="enableSelect" @click="batchDelete" type="danger" :loading="startLoading">delete</el-button>
+            <el-button v-if="enableSelect" @click="enableSelect = false" type="info" :disabled="startLoading">cancel</el-button>
+        </span>
+        
+        <el-tree :data="menus" :draggable="enableDrag" :allow-drop="allowDrop" @node-drop="handleDrop" :show-checkbox="enableSelect" node-key="catId" 
+            :default-expanded-keys="expendedKeys" :props="defaultProps" @node-click="handleNodeClick" :expand-on-click-node=false ref="menuTree">
             <span class="custom-tree-node" slot-scope="{ node, data }">
         <span>{{ node.label }}</span>
         <span>
@@ -56,6 +69,10 @@
 export default {
     data() {
         return {
+            enableDrag: false,
+            startLoading: false,
+            enableSelect: false,
+            updateNodes: [],
             dialogType: "",
             menus: [],
             expendedKeys: [],
@@ -95,8 +112,21 @@ export default {
                 this.dataListLoading = false
             })
         },
+        resetCategory(){
+            this.category = {
+                catId: null,
+                name: "",
+                parentCid: 0,
+                catLevel: 0,
+                showStatus: 1,
+                sort: 0,
+                icon: "",
+                productUnit: ""
+            }
+        },
         append(data) {
             this.dialogVisible = true
+            this.resetCategory()
             this.dialogType = "add"
             this.category.parentCid = data.catId
             this.category.catLevel = data.catLevel * 1 + 1
@@ -131,7 +161,6 @@ export default {
             }).catch((e) => {
                 if (e === "cancel") {
                     this.$message({
-                        type: 'success',
                         message: 'Delete canceled'
                     })
                 } else {
@@ -145,6 +174,7 @@ export default {
         },
         edit(data) {
             this.dialogType = "edit"
+            this.resetCategory()
             this.$http({
                 url: this.$http.adornUrl(`/product/category/info/${data.catId}`),
                 method: 'get'
@@ -248,7 +278,6 @@ export default {
         handleDrop(draggingNode, dropNode, dropType, ev) {
             let pCid = 0
             let siblings = null
-            let updateNodes = []
 
             if (dropType === "inner") {
                 pCid = dropNode.data.catId
@@ -261,7 +290,7 @@ export default {
             for (let i = 0; i < siblings.length; i++) {
 
                 if (siblings[i].data.catId === draggingNode.data.catId) {
-                    updateNodes.push({
+                    this.appendToUpdateList({
                         catId: siblings[i].data.catId,
                         sort: i,
                         parentCid: pCid,
@@ -269,23 +298,21 @@ export default {
                     })
 
                     if (siblings[i].level != draggingNode.data.catLevel) {
-                        this.updateChildNodesLevel(siblings[i].childNodes, updateNodes)
+                        this.updateChildNodesLevel(siblings[i].childNodes)
                     }
 
                 } else {
-                    updateNodes.push({
+                    this.appendToUpdateList({
                         catId: siblings[i].data.catId,
                         sort: i
                     })
                 }
 
-                console.log(updateNodes)
+                console.log(this.updateNodes)
             }
-            
-            this.updateByList(updateNodes)
 
         },
-        updateChildNodesLevel(siblings, updateNodes) {
+        updateChildNodesLevel(siblings) {
 
             if (siblings == null || siblings.length === 0) {
                 return
@@ -294,24 +321,41 @@ export default {
             for (let i = 0; i < siblings.length; i++) {
 
 
-                updateNodes.push({
+                this.appendToUpdateList({
                     catId: siblings[i].data.catId,
                     sort: i,
                     catLevel: siblings[i].level
                 })
 
-                this.updateChildNodesLevel(siblings[i].childNodes, updateNodes)
+                this.updateChildNodesLevel(siblings[i].childNodes)
 
             }
         },
-        updateByList(nodes){
+        appendToUpdateList(toUpdate) {
+            for (let node of this.updateNodes) {
+                if (node.catId === toUpdate.catId) {
+                    console.log(node)
+                    node.sort = toUpdate.sort
+                    console.log(node)
+                    return
+                }
+            }
+            this.updateNodes.push(toUpdate)
+        },
+        updateSorting() {
 
-                this.$http({
+            this.startLoading = true
+
+            this.expendedKeys = this.updateNodes.map(n => n.parentCid).filter(id => id)
+
+            this.$http({
                 url: this.$http.adornUrl('/product/category/update/sort'),
                 method: 'post',
-                data: this.$http.adornData(nodes, false)
+                data: this.$http.adornData(this.updateNodes, false)
             }).then(({ data }) => {
-
+                this.startLoading = false
+                this.enableDrag = false
+                this.updateNodes = []
                 if (data && data.code === 0) {
                     console.log("success")
                     this.$message({
@@ -325,18 +369,90 @@ export default {
                 }
 
             }).catch((data) => {
+                this.startLoading = false
+                this.enableDrag = false
                 this.$message({
                     type: 'error',
                     message: 'System error, edit tree canceled'
                 });
                 console.error(data)
             })
-            
+
+        },
+        cancleUpdateSorting() {
+            this.updateNodes = []
+            this.getMenus()
+        },
+        batchDelete() {
+            let checkedNodes = this.$refs.menuTree.getCheckedNodes()
+            console.log(checkedNodes)
+            if (!checkedNodes || checkedNodes.length === 0) {
+                this.$message({
+                    type: 'error',
+                    message: 'Please select a node'
+                })
+                return
+            }
+            this.$confirm(`This will delete the menu item ${checkedNodes.map(n => n.name).join()}. Continue?`, 'Warning', {
+                confirmButtonText: 'OK',
+                cancelButtonText: 'Cancel',
+                type: 'warning'
+            }).then(() => {
+                this.startLoading = true
+                let ids = checkedNodes.map(n => n.catId)
+                return this.$http({
+                    url: this.$http.adornUrl('/product/category/delete'),
+                    method: 'post',
+                    data: this.$http.adornData(ids, false)
+                })
+            }).then(({ data }) => {
+                this.startLoading = false
+                this.enableSelect = false
+                if (data && data.code === 0) {
+                    this.$message({
+                        type: 'success',
+                        message: 'Delete completed'
+                    });
+
+                    this.getMenus();
+                } else {
+                    throw new Error(data);
+                }
+            }).catch((e) => {
+                this.startLoading = false
+                this.enableSelect = false
+                if (e === "cancel") {
+                    this.$message({
+                        message: 'Delete canceled'
+                    })
+                } else {
+                    this.$message({
+                        type: 'error',
+                        message: 'System error, delete canceled'
+                    })
+                }
+            });
         }
     },
     created() {
         this.getMenus();
     },
+    watch: {
+        enableDrag: function (newVal) {
+            if (newVal) {
+
+            } else {
+                this.cancleUpdateSorting()
+            }
+        },
+        enableSelect: function (newVal) {
+            if (newVal) {
+
+            } else {
+                this.$refs.menuTree.setCheckedNodes([])
+            }
+        }
+    }
 };
 </script>
 <style lang="">

@@ -35,45 +35,24 @@
             <version>3.5.4</version>
         </dependency>
 
-        <dependency>
-            <groupId>com.azure</groupId>
-            <artifactId>azure-sdk-bom</artifactId>
-            <version>1.2.21</version>
-            <type>pom</type>
-            <scope>import</scope>
-        </dependency>
-
         <!-- https://mvnrepository.com/artifact/com.azure/azure-storage-blob -->
         <dependency>
             <groupId>com.azure</groupId>
             <artifactId>azure-storage-blob</artifactId>
-            <version>12.25.3</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.azure/azure-identity -->
         <dependency>
             <groupId>com.azure</groupId>
             <artifactId>azure-identity</artifactId>
-            <version>1.12.0</version>
-            <scope>compile</scope>
         </dependency>
 
-<!--
-
-        &lt;!&ndash; https://mvnrepository.com/artifact/com.baomidou/mybatis-plus &ndash;&gt;
+        <!-- https://mvnrepository.com/artifact/com.azure/azure-xml -->
         <dependency>
-            <groupId>com.baomidou</groupId>
-            <artifactId>mybatis-plus</artifactId>
-            <version>3.5.4</version>
+            <groupId>com.azure</groupId>
+            <artifactId>azure-xml</artifactId>
+            <version>1.0.0-beta.3</version>
         </dependency>
-
-        &lt;!&ndash; https://mvnrepository.com/artifact/org.mybatis.spring.boot/mybatis-spring-boot-starter &ndash;&gt;
-        <dependency>
-            <groupId>org.mybatis.spring.boot</groupId>
-            <artifactId>mybatis-spring-boot-starter</artifactId>
-            <version>2.1.1</version>
-        </dependency>
--->
 
 
         <!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
@@ -118,11 +97,19 @@
             <dependency>
                 <groupId>com.alibaba.cloud</groupId>
                 <artifactId>spring-cloud-alibaba-dependencies</artifactId>
-                <version>2.1.4.RELEASE</version>
+                <version>2021.0.5.0</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.azure</groupId>
+                <artifactId>azure-sdk-bom</artifactId>
+                <version>1.2.22</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
+
 
 </project>

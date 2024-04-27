@@ -1,4 +1,4 @@
-package azure;
+package com.ecom.thirdParty.factory;
 
 import com.azure.identity.IntelliJCredential;
 import com.azure.identity.IntelliJCredentialBuilder;

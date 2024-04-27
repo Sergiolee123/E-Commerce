@@ -23,6 +23,7 @@
         <module>renren-generator</module>
         <module>ecom-common</module>
         <module>ecom-gateway</module>
+        <module>ecom-third-party</module>
     </modules>
 
 

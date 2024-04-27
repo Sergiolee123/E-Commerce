@@ -1,4 +1,4 @@
-package azure.service;
+package com.ecom.thirdParty.service;
 
 import com.azure.storage.blob.BlobServiceClient;
 

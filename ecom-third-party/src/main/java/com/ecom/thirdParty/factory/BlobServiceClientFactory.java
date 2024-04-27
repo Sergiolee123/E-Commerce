@@ -1,14 +1,14 @@
-package azure;
+package com.ecom.thirdParty.factory;
 
 import com.azure.storage.blob.BlobServiceClient;
 import com.azure.storage.blob.BlobServiceClientBuilder;
 
-public enum BlobClientFactory {
+public enum BlobServiceClientFactory {
     INSTANT;
 
     private final BlobServiceClient blobServiceClient;
 
-    BlobClientFactory(){
+    BlobServiceClientFactory(){
         blobServiceClient = new BlobServiceClientBuilder()
                 .endpoint("https://ecomoss.blob.core.windows.net/")
                 .credential(DefaultCertFactory.INSTANT.getIntelliJCredential())

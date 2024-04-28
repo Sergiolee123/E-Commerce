@@ -20,12 +20,16 @@
       <el-table-column prop="name" header-align="center" align="center" label="品牌名">
       </el-table-column>
       <el-table-column prop="logo" header-align="center" align="center" label="品牌logo地址">
+        <template slot-scope="scope">
+          <el-image style="width: 80px; height: 200px" :src="scope.row.logo" fit="fill"></el-image>
+        </template>
       </el-table-column>
       <el-table-column prop="descript" header-align="center" align="center" label="介绍">
       </el-table-column>
       <el-table-column prop="showStatus" header-align="center" align="center" label="显示状态">
         <template slot-scope="scope">
-          <el-switch v-model="scope.row.showStatus" active-color="#13ce66" inactive-color="#ff4949" :active-value="1" :inactive-value="0" @change="updateBramdStatus(scope.row)">
+          <el-switch v-model="scope.row.showStatus" active-color="#13ce66" inactive-color="#ff4949" :active-value="1"
+            :inactive-value="0" @change="updateBramdStatus(scope.row)">
           </el-switch>
         </template>
       </el-table-column>
@@ -147,29 +151,29 @@ export default {
         })
       })
     },
-    updateBramdStatus(row){
+    updateBramdStatus(row) {
       this.$http({
-              url: this.$http.adornUrl(`/product/brand/update`),
-              method: 'post',
-              data: this.$http.adornData({
-                'brandId': row.brandId,
-                'showStatus': row.showStatus
-              })
-            }).then(({data}) => {
-              if (data && data.code === 0) {
-                this.$message({
-                  message: '操作成功',
-                  type: 'success',
-                  duration: 1500,
-                  onClose: () => {
-                    this.visible = false
-                    this.$emit('refreshDataList')
-                  }
-                })
-              } else {
-                this.$message.error(data.msg)
-              }
-            })
+        url: this.$http.adornUrl(`/product/brand/update`),
+        method: 'post',
+        data: this.$http.adornData({
+          'brandId': row.brandId,
+          'showStatus': row.showStatus
+        })
+      }).then(({ data }) => {
+        if (data && data.code === 0) {
+          this.$message({
+            message: '操作成功',
+            type: 'success',
+            duration: 1500,
+            onClose: () => {
+              this.visible = false
+              this.$emit('refreshDataList')
+            }
+          })
+        } else {
+          this.$message.error(data.msg)
+        }
+      })
     }
   }
 }

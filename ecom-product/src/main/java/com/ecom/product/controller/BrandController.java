@@ -2,14 +2,17 @@ package com.ecom.product.controller;
 
 import com.ecom.common.utils.PageUtils;
 import com.ecom.common.utils.R;
+import com.ecom.common.valid.group.CreateGroup;
+import com.ecom.common.valid.group.UpdateGroup;
+import com.ecom.common.valid.group.UpdateStatusGroup;
 import com.ecom.product.entity.BrandEntity;
 import com.ecom.product.service.BrandService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
 import java.util.Map;
-
 
 
 /**
@@ -53,7 +56,7 @@ public class BrandController {
      */
     @RequestMapping("/save")
     //@RequiresPermissions("product:brand:save")
-    public R save(@RequestBody BrandEntity brand){
+    public R save(@Validated(CreateGroup.class) @RequestBody BrandEntity brand){
 		brandService.save(brand);
         return R.ok();
     }
@@ -63,8 +66,16 @@ public class BrandController {
      */
     @RequestMapping("/update")
     //@RequiresPermissions("product:brand:update")
-    public R update(@RequestBody BrandEntity brand){
+    public R update(@Validated(UpdateGroup.class) @RequestBody BrandEntity brand){
 		brandService.updateById(brand);
+
+        return R.ok();
+    }
+
+    @RequestMapping("/update/status")
+    //@RequiresPermissions("product:brand:update")
+    public R updateStatus(@Validated(UpdateStatusGroup.class) @RequestBody BrandEntity brand){
+        brandService.updateById(brand);
 
         return R.ok();
     }

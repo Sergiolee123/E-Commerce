@@ -21,7 +21,7 @@
       </el-table-column>
       <el-table-column prop="logo" header-align="center" align="center" label="品牌logo地址">
         <template slot-scope="scope">
-          <el-image style="width: 80px; height: 200px" :src="scope.row.logo" fit="fill"></el-image>
+            <img width="100%" :src="scope.row.logo" alt="">
         </template>
       </el-table-column>
       <el-table-column prop="descript" header-align="center" align="center" label="介绍">
@@ -29,7 +29,7 @@
       <el-table-column prop="showStatus" header-align="center" align="center" label="显示状态">
         <template slot-scope="scope">
           <el-switch v-model="scope.row.showStatus" active-color="#13ce66" inactive-color="#ff4949" :active-value="1"
-            :inactive-value="0" @change="updateBramdStatus(scope.row)">
+            :inactive-value="0" @change="updateBrandStatus(scope.row)">
           </el-switch>
         </template>
       </el-table-column>
@@ -151,9 +151,9 @@ export default {
         })
       })
     },
-    updateBramdStatus(row) {
+    updateBrandStatus(row) {
       this.$http({
-        url: this.$http.adornUrl(`/product/brand/update`),
+        url: this.$http.adornUrl(`/product/brand/update/status`),
         method: 'post',
         data: this.$http.adornData({
           'brandId': row.brandId,

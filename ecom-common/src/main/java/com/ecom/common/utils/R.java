@@ -8,6 +8,7 @@
 
 package com.ecom.common.utils;
 
+import com.ecom.common.exception.BizCodeEnum;
 import org.apache.http.HttpStatus;
 
 import java.util.HashMap;
@@ -27,7 +28,7 @@ public class R extends HashMap<String, Object> {
 	}
 	
 	public static R error() {
-		return error(HttpStatus.SC_INTERNAL_SERVER_ERROR, "unknown error, please contact support");
+		return error(BizCodeEnum.UNKNOW_EXCEPTION);
 	}
 	
 	public static R error(String msg) {
@@ -40,6 +41,14 @@ public class R extends HashMap<String, Object> {
 		r.put("msg", msg);
 		return r;
 	}
+
+	public static R error(BizCodeEnum bizCodeEnum) {
+		R r = new R();
+		r.put("code", bizCodeEnum.getCode());
+		r.put("msg", bizCodeEnum.getMsg());
+		return r;
+	}
+
 
 	public static R ok(String msg) {
 		R r = new R();

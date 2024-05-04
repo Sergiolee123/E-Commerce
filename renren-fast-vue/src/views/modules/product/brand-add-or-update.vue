@@ -63,9 +63,9 @@ import singleUpload from "@/components/upload/singleUpload"
           ],
           firstLetter: [
             { validator: (rule, value, callback)=>{
-              if(!value || value == ''){
+              if(!value || value === ''){
                 callback(new Error('首字母必須填寫'))
-              }else if (/^[a-zA-z]$/.test(value)){
+              }else if (!/^[a-zA-z]$/.test(value)){
                 callback(new Error('首字母必須是a-z或者A-Z之間'))
               }else {
                 callback()
@@ -74,7 +74,7 @@ import singleUpload from "@/components/upload/singleUpload"
           ],
           sort: [
             {  validator: (rule, value, callback)=>{
-              if(value || value == ''){
+              if(value === undefined || value === ''){
                 callback(new Error('排序字段必須填寫'))
               }else if (!Number.isInteger(value) || value < 0){
                 callback(new Error('排序字段必須是數字或者>0'))

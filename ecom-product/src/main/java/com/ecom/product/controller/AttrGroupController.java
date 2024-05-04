@@ -1,19 +1,15 @@
 package com.ecom.product.controller;
 
-import java.util.Arrays;
-import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.ecom.product.entity.AttrGroupEntity;
-import com.ecom.product.service.AttrGroupService;
 import com.ecom.common.utils.PageUtils;
 import com.ecom.common.utils.R;
+import com.ecom.product.entity.AttrGroupEntity;
+import com.ecom.product.service.AttrGroupService;
+import com.ecom.product.service.CategoryService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Arrays;
+import java.util.Map;
 
 
 
@@ -30,6 +26,9 @@ public class AttrGroupController {
     @Autowired
     private AttrGroupService attrGroupService;
 
+    @Autowired
+    private CategoryService categoryService;
+
     /**
      * 列表
      */
@@ -37,6 +36,15 @@ public class AttrGroupController {
     //@RequiresPermissions("product:attrgroup:list")
     public R list(@RequestParam Map<String, Object> params){
         PageUtils page = attrGroupService.queryPage(params);
+
+        return R.ok().put("page", page);
+    }
+
+    @RequestMapping("/list/{catalogId}")
+    //@RequiresPermissions("product:attrgroup:list")
+    public R listByCatalogId(@RequestParam Map<String, Object> params, @PathVariable("catalogId") Long catalogId){
+
+        PageUtils page = attrGroupService.queryPage(params, catalogId);
 
         return R.ok().put("page", page);
     }
@@ -49,6 +57,11 @@ public class AttrGroupController {
     //@RequiresPermissions("product:attrgroup:info")
     public R info(@PathVariable("attrGroupId") Long attrGroupId){
 		AttrGroupEntity attrGroup = attrGroupService.getById(attrGroupId);
+
+        Long catelogId = attrGroup.getCatelogId();
+        Long[] path = categoryService.findCatelogPath(catelogId);
+
+        attrGroup.setCatelogPath(path);
 
         return R.ok().put("attrGroup", attrGroup);
     }

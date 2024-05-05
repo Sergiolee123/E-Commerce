@@ -1,19 +1,16 @@
 package com.ecom.product.controller;
 
-import java.util.Arrays;
-import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.ecom.product.entity.AttrEntity;
-import com.ecom.product.service.AttrService;
 import com.ecom.common.utils.PageUtils;
 import com.ecom.common.utils.R;
+import com.ecom.product.entity.AttrEntity;
+import com.ecom.product.service.AttrService;
+import com.ecom.product.vo.AttrVo;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Arrays;
+import java.util.Map;
 
 
 
@@ -24,6 +21,7 @@ import com.ecom.common.utils.R;
  * @email lee.sergio.hk@gmail.com
  * @date 2024-03-11 21:09:17
  */
+@Slf4j
 @RestController
 @RequestMapping("product/attr")
 public class AttrController {
@@ -37,6 +35,14 @@ public class AttrController {
     //@RequiresPermissions("product:attr:list")
     public R list(@RequestParam Map<String, Object> params){
         PageUtils page = attrService.queryPage(params);
+
+        return R.ok().put("page", page);
+    }
+
+    @RequestMapping("/base/list/{catelogId}")
+    //@RequiresPermissions("product:attr:list")
+    public R listByCatelogId(@RequestParam Map<String, Object> params, @PathVariable("catelogId") Long catelogId){
+        PageUtils page = attrService.queryBaseAttrPage(params, catelogId);
 
         return R.ok().put("page", page);
     }
@@ -58,8 +64,10 @@ public class AttrController {
      */
     @RequestMapping("/save")
     //@RequiresPermissions("product:attr:save")
-    public R save(@RequestBody AttrEntity attr){
-		attrService.save(attr);
+    public R save(@RequestBody AttrVo attr){
+		attrService.saveAttr(attr);
+
+
 
         return R.ok();
     }

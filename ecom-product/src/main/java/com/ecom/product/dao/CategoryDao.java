@@ -1,8 +1,12 @@
 package com.ecom.product.dao;
 
-import com.ecom.product.entity.CategoryEntity;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.ecom.product.entity.CategoryEntity;
+import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Mapper;
+
+import java.util.Collection;
+import java.util.Map;
 
 /**
  * 商品三级分类
@@ -13,5 +17,8 @@ import org.apache.ibatis.annotations.Mapper;
  */
 @Mapper
 public interface CategoryDao extends BaseMapper<CategoryEntity> {
-	
+
+    @MapKey("catId")
+    Map<Long, CategoryEntity> getCatIdMap(Collection<Long> catIds);
+
 }

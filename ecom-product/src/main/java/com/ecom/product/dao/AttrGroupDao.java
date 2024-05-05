@@ -1,8 +1,12 @@
 package com.ecom.product.dao;
 
-import com.ecom.product.entity.AttrGroupEntity;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.ecom.product.entity.AttrGroupEntity;
+import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Mapper;
+
+import java.util.Collection;
+import java.util.Map;
 
 /**
  * 属性分组
@@ -13,5 +17,7 @@ import org.apache.ibatis.annotations.Mapper;
  */
 @Mapper
 public interface AttrGroupDao extends BaseMapper<AttrGroupEntity> {
-	
+
+    @MapKey("attrGroupId")
+    Map<Long, AttrGroupEntity> getAttrGroupIdMap(Collection<Long> attrGroupIds);
 }

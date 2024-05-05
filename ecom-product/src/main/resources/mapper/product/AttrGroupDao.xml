@@ -13,5 +13,17 @@
         <result property="catelogId" column="catelog_id"/>
     </resultMap>
 
+    <select id="getAttrGroupIdMap" resultMap="attrGroupMap">
+        <![CDATA[
+            select * from ecom_pms.pms_attr_group
+        ]]>
+        <where>
+            attr_group_id in
+            <foreach item="item" index="index" collection="attrGroupIds" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </where>
+    </select>
+
 
 </mapper>

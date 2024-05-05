@@ -16,5 +16,16 @@
         <result property="productCount" column="product_count"/>
     </resultMap>
 
+    <select id="getCatIdMap" resultMap="categoryMap">
+        <![CDATA[
+            select * from ecom_pms.pms_category
+        ]]>
+        <where>
+            cat_id in
+            <foreach item="item" index="index" collection="catIds" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </where>
+    </select>
 
 </mapper>

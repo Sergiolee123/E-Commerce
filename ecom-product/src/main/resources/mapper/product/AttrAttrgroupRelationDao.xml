@@ -10,6 +10,17 @@
         <result property="attrGroupId" column="attr_group_id"/>
         <result property="attrSort" column="attr_sort"/>
     </resultMap>
+    <select id="getAttrIdMap" resultMap="attrAttrgroupRelationMap">
+        <![CDATA[
+            select * from ecom_pms.pms_attr_attrgroup_relation
+        ]]>
+        <where>
+            attr_id in
+            <foreach item="item" index="index" collection="attrIds" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </where>
+    </select>
 
 
 </mapper>

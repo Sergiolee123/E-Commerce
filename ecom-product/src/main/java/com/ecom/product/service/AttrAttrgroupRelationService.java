@@ -3,7 +3,9 @@ package com.ecom.product.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.ecom.common.utils.PageUtils;
 import com.ecom.product.entity.AttrAttrgroupRelationEntity;
+import org.apache.ibatis.annotations.Param;
 
+import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -16,5 +18,7 @@ import java.util.Map;
 public interface AttrAttrgroupRelationService extends IService<AttrAttrgroupRelationEntity> {
 
     PageUtils queryPage(Map<String, Object> params);
+
+    Map<Long, AttrAttrgroupRelationEntity> getAttrIdMap(@Param("attrIds") Collection<Long> attrIds);
 }
 

@@ -4,6 +4,7 @@ import com.ecom.common.utils.PageUtils;
 import com.ecom.common.utils.R;
 import com.ecom.product.entity.AttrEntity;
 import com.ecom.product.service.AttrService;
+import com.ecom.product.vo.AttrRespVo;
 import com.ecom.product.vo.AttrVo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,9 +55,10 @@ public class AttrController {
     @RequestMapping("/info/{attrId}")
     //@RequiresPermissions("product:attr:info")
     public R info(@PathVariable("attrId") Long attrId){
-		AttrEntity attr = attrService.getById(attrId);
+        AttrRespVo attrInfo = attrService.getAttrInfo(attrId);
 
-        return R.ok().put("attr", attr);
+
+        return R.ok().put("attr", attrInfo);
     }
 
     /**
@@ -77,8 +79,8 @@ public class AttrController {
      */
     @RequestMapping("/update")
     //@RequiresPermissions("product:attr:update")
-    public R update(@RequestBody AttrEntity attr){
-		attrService.updateById(attr);
+    public R update(@RequestBody AttrVo attr){
+		attrService.updateAttr(attr);
 
         return R.ok();
     }

@@ -2,7 +2,6 @@ package com.ecom.product.controller;
 
 import com.ecom.common.utils.PageUtils;
 import com.ecom.common.utils.R;
-import com.ecom.product.entity.AttrEntity;
 import com.ecom.product.service.AttrService;
 import com.ecom.product.vo.AttrRespVo;
 import com.ecom.product.vo.AttrVo;
@@ -40,10 +39,10 @@ public class AttrController {
         return R.ok().put("page", page);
     }
 
-    @RequestMapping("/base/list/{catelogId}")
+    @RequestMapping("/{attrType}/list/{catelogId}")
     //@RequiresPermissions("product:attr:list")
-    public R listByCatelogId(@RequestParam Map<String, Object> params, @PathVariable("catelogId") Long catelogId){
-        PageUtils page = attrService.queryBaseAttrPage(params, catelogId);
+    public R listByCatelogId(@RequestParam Map<String, Object> params, @PathVariable("attrType") String type, @PathVariable("catelogId") Long catelogId){
+        PageUtils page = attrService.queryBaseAttrPage(params, catelogId, type);
 
         return R.ok().put("page", page);
     }

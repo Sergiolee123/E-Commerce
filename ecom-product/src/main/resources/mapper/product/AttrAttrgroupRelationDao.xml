@@ -22,5 +22,12 @@
         </where>
     </select>
 
+    <delete id="deleteBatchRelation">
+        DELETE FROM `ecom_pms`.`pms_attr_attrgroup_relation` where
+        <foreach collection="entities" item="item" separator=" OR ">
+            (attr_id=#{item.attrId} AND attr_group_id=#{item.attrGroupId})
+        </foreach>
+    </delete>
+
 
 </mapper>

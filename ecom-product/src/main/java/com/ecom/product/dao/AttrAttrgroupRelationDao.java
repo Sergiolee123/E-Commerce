@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -22,4 +23,5 @@ public interface AttrAttrgroupRelationDao extends BaseMapper<AttrAttrgroupRelati
     @MapKey("attrId")
     Map<Long, AttrAttrgroupRelationEntity> getAttrIdMap(@Param("attrIds") Collection<Long> attrIds);
 
+    void deleteBatchRelation(@Param("entities") List<AttrAttrgroupRelationEntity> collect);
 }

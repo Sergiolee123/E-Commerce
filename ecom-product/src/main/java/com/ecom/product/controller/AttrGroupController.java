@@ -2,13 +2,18 @@ package com.ecom.product.controller;
 
 import com.ecom.common.utils.PageUtils;
 import com.ecom.common.utils.R;
+import com.ecom.product.entity.AttrEntity;
 import com.ecom.product.entity.AttrGroupEntity;
+import com.ecom.product.service.AttrAttrgroupRelationService;
 import com.ecom.product.service.AttrGroupService;
+import com.ecom.product.service.AttrService;
 import com.ecom.product.service.CategoryService;
+import com.ecom.product.vo.AttrGroupRelationVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 
@@ -28,6 +33,24 @@ public class AttrGroupController {
 
     @Autowired
     private CategoryService categoryService;
+
+    @Autowired
+    private AttrService attrService;
+
+    @Autowired
+    private AttrAttrgroupRelationService attrAttrgroupRelationService;
+
+    @GetMapping("/{attrgroupId}/attr/relation")
+    public R attrRelation(@PathVariable("attrgroupId") Long attrgroupId){
+        List<AttrEntity> entities = attrService.getRelationAttr(attrgroupId);
+        return R.ok().put("data", entities);
+    }
+
+    @GetMapping("/{attrgroupId}/noattr/relation")
+    public R attrNoRelation(@RequestParam Map<String, Object> params, @PathVariable("attrgroupId") Long attrgroupId){
+        PageUtils page = attrService.getNoRelationAttr(params, attrgroupId);
+        return R.ok().put("page", page);
+    }
 
     /**
      * 列表
@@ -76,6 +99,20 @@ public class AttrGroupController {
 
         return R.ok();
     }
+
+    @PostMapping("/attr/relation")
+    public R addRelation(@RequestBody List<AttrGroupRelationVo> vos){
+        attrAttrgroupRelationService.saveBatch(vos);
+        return R.ok();
+    }
+
+
+    @PostMapping("/attr/relation/delete")
+    public R deleteRelation(@RequestBody List<AttrGroupRelationVo> vos){
+        attrService.deleteRelation(vos);
+        return R.ok();
+    }
+
 
     /**
      * 修改

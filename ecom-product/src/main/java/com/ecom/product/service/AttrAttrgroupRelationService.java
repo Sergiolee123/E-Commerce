@@ -3,9 +3,11 @@ package com.ecom.product.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.ecom.common.utils.PageUtils;
 import com.ecom.product.entity.AttrAttrgroupRelationEntity;
+import com.ecom.product.vo.AttrGroupRelationVo;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -20,5 +22,7 @@ public interface AttrAttrgroupRelationService extends IService<AttrAttrgroupRela
     PageUtils queryPage(Map<String, Object> params);
 
     Map<Long, AttrAttrgroupRelationEntity> getAttrIdMap(@Param("attrIds") Collection<Long> attrIds);
+
+    void saveBatch(List<AttrGroupRelationVo> vos);
 }
 

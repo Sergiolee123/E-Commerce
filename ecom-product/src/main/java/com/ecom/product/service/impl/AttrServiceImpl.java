@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.ecom.common.constant.ProductConstant;
 import com.ecom.common.utils.PageUtils;
 import com.ecom.common.utils.Query;
 import com.ecom.product.dao.AttrAttrgroupRelationDao;
@@ -18,6 +19,7 @@ import com.ecom.product.entity.CategoryEntity;
 import com.ecom.product.service.AttrAttrgroupRelationService;
 import com.ecom.product.service.AttrService;
 import com.ecom.product.service.CategoryService;
+import com.ecom.product.vo.AttrGroupRelationVo;
 import com.ecom.product.vo.AttrRespVo;
 import com.ecom.product.vo.AttrVo;
 import org.apache.commons.lang.StringUtils;
@@ -26,10 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -67,16 +66,21 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
         BeanUtils.copyProperties(attr, attrEntity);
         this.save(attrEntity);
 
-        AttrAttrgroupRelationEntity attrAttrgroupRelation = new AttrAttrgroupRelationEntity();
-        attrAttrgroupRelation.setAttrGroupId(attr.getAttrGroupId());
-        attrAttrgroupRelation.setAttrId(attrEntity.getAttrId());
-        attrAttrgroupRelationService.save(attrAttrgroupRelation);
+        if(Objects.equals(attr.getAttrType(), ProductConstant.AttrEnum.ATTR_TYPE_BASE.getCode())){
+            AttrAttrgroupRelationEntity attrAttrgroupRelation = new AttrAttrgroupRelationEntity();
+            attrAttrgroupRelation.setAttrGroupId(attr.getAttrGroupId());
+            attrAttrgroupRelation.setAttrId(attrEntity.getAttrId());
+            attrAttrgroupRelationService.save(attrAttrgroupRelation);
+        }
     }
 
     @Transactional
     @Override
-    public PageUtils queryBaseAttrPage(Map<String, Object> params, Long catelogId) {
-        QueryWrapper<AttrEntity> attrEntityQueryWrapper = new QueryWrapper<>();
+    public PageUtils queryBaseAttrPage(Map<String, Object> params, Long catelogId, String type) {
+        QueryWrapper<AttrEntity> attrEntityQueryWrapper = new QueryWrapper<AttrEntity>()
+                .eq("attr_type",
+                        "base".equalsIgnoreCase(type)? ProductConstant.AttrEnum.ATTR_TYPE_BASE.getCode()
+                                : ProductConstant.AttrEnum.ATTR_TYPE_SALE.getCode());
 
 
         if(catelogId != 0){
@@ -119,14 +123,19 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
 
     @Transactional
     public List<AttrRespVo> getAttrRespVos(List<AttrEntity> records) {
+
+        if(records.isEmpty()){
+            return new ArrayList<>();
+        }
+
         Map<Long, AttrAttrgroupRelationEntity> attrIdMap = attrAttrgroupRelationService
                 .getAttrIdMap(records.stream().map(AttrEntity::getAttrId).collect(Collectors.toSet()));
 
-        Map<Long, AttrGroupEntity> attrGroupIdMap = new HashMap<>();
+        final Map<Long, AttrGroupEntity> attrGroupIdMap = new HashMap<>();
 
         if(!attrIdMap.isEmpty()){
-            attrGroupDao.getAttrGroupIdMap(attrIdMap.values().stream()
-                    .map(AttrAttrgroupRelationEntity::getAttrGroupId).collect(Collectors.toSet()));
+            attrGroupIdMap.putAll( attrGroupDao.getAttrGroupIdMap(attrIdMap.values().stream()
+                    .map(AttrAttrgroupRelationEntity::getAttrGroupId).collect(Collectors.toSet())));
         }
 
 
@@ -170,6 +179,63 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
         } else {
             attrAttrgroupRelationService.save(attrAttrgroupRelation);
         }
+
+    }
+
+    /**
+     * Return all base attributes related to a specified attrgroupId
+     * @param attrgroupId
+     * @return
+     */
+    @Override
+    public List<AttrEntity> getRelationAttr(Long attrgroupId) {
+        List<AttrAttrgroupRelationEntity> attrAttrgroupRelationEntities = attrAttrgroupRelationDao.selectList(new LambdaQueryWrapper<AttrAttrgroupRelationEntity>().eq(AttrAttrgroupRelationEntity::getAttrGroupId, attrgroupId));
+        return attrAttrgroupRelationEntities.isEmpty() ?new ArrayList<>() : this.listByIds(attrAttrgroupRelationEntities.stream().map(AttrAttrgroupRelationEntity::getAttrId).collect(Collectors.toList()));
+    }
+
+    @Override
+    public void deleteRelation(List<AttrGroupRelationVo> vos) {
+        List<AttrAttrgroupRelationEntity> collect = vos.stream().map(v -> {
+            AttrAttrgroupRelationEntity relationEntity = new AttrAttrgroupRelationEntity();
+            BeanUtils.copyProperties(v, relationEntity);
+            return relationEntity;
+        }).collect(Collectors.toList());
+        attrAttrgroupRelationDao.deleteBatchRelation(collect);
+    }
+
+    /**
+     * Return all base attributes with in a group which are not yet related to any group
+     * @param attrgroupId
+     * @return
+     */
+    @Override
+    public PageUtils getNoRelationAttr(Map<String, Object> params, Long attrgroupId) {
+        AttrGroupEntity attrGroupEntity = attrGroupDao.selectById(attrgroupId);
+        Long catelogId = attrGroupEntity.getCatelogId();
+
+        List<AttrGroupEntity> attrGroupEntities = attrGroupDao.selectList(new LambdaQueryWrapper<AttrGroupEntity>().eq(AttrGroupEntity::getCatelogId, catelogId));
+
+        List<Long> attrGroupIds = attrGroupEntities.stream().map(AttrGroupEntity::getAttrGroupId).collect(Collectors.toList());
+
+        List<AttrAttrgroupRelationEntity> attrAttrgroupRelationEntities = attrAttrgroupRelationDao.selectList(new LambdaQueryWrapper<AttrAttrgroupRelationEntity>().in(AttrAttrgroupRelationEntity::getAttrGroupId, attrGroupIds));
+
+        List<Long> attrIds = attrAttrgroupRelationEntities.stream().map(AttrAttrgroupRelationEntity::getAttrId).collect(Collectors.toList());
+
+        LambdaQueryWrapper<AttrEntity> attrEntityLambdaQueryWrapper = new LambdaQueryWrapper<AttrEntity>().eq(AttrEntity::getCatelogId, catelogId).eq(AttrEntity::getAttrType, ProductConstant.AttrEnum.ATTR_TYPE_BASE.getCode());
+
+        if(!attrIds.isEmpty()){
+            attrEntityLambdaQueryWrapper.notIn(AttrEntity::getAttrId, attrIds);
+        }
+
+        String key = (String) params.get("key");
+        if(StringUtils.isNotBlank(key)){
+            attrEntityLambdaQueryWrapper.and((w)-> {
+                w.eq(AttrEntity::getAttrId, key).or().like(AttrEntity::getAttrName, key);
+            });
+        }
+        IPage<AttrEntity> page = this.page(new Query<AttrEntity>().getPage(params), attrEntityLambdaQueryWrapper);
+
+        return new PageUtils(page);
 
     }
 

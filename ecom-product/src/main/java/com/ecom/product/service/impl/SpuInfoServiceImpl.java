@@ -6,13 +6,11 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ecom.common.utils.PageUtils;
 import com.ecom.common.utils.Query;
 import com.ecom.product.dao.SpuInfoDao;
-import com.ecom.product.entity.SpuInfoDescEntity;
-import com.ecom.product.entity.SpuInfoEntity;
-import com.ecom.product.service.ProductAttrValueService;
-import com.ecom.product.service.SpuImagesService;
-import com.ecom.product.service.SpuInfoDescService;
-import com.ecom.product.service.SpuInfoService;
+import com.ecom.product.entity.*;
+import com.ecom.product.service.*;
+import com.ecom.product.vo.Attr;
 import com.ecom.product.vo.BaseAttr;
+import com.ecom.product.vo.Sku;
 import com.ecom.product.vo.SpuSaveVo;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -21,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 
 @Service("spuInfoService")
@@ -29,11 +28,17 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
     private final SpuInfoDescService infoDescService;
     private final SpuImagesService imagesService;
     private final ProductAttrValueService attrValueService;
+    private final SkuInfoService skuInfoService;
+    private final SkuImagesService skuImagesService;
+    private final SkuSaleAttrValueService skuSaleAttrValueService;
 
-    public SpuInfoServiceImpl(SpuInfoDescService infoDescService, SpuImagesService imagesService, ProductAttrValueService attrValueService) {
+    public SpuInfoServiceImpl(SpuInfoDescService infoDescService, SpuImagesService imagesService, ProductAttrValueService attrValueService, SkuInfoService skuInfoService, SkuImagesService skuImagesService, SkuSaleAttrValueService skuSaleAttrValueService) {
         this.infoDescService = infoDescService;
         this.imagesService = imagesService;
         this.attrValueService = attrValueService;
+        this.skuInfoService = skuInfoService;
+        this.skuImagesService = skuImagesService;
+        this.skuSaleAttrValueService = skuSaleAttrValueService;
     }
 
     @Override
@@ -66,6 +71,41 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
 
         List<BaseAttr> baseAttrs = spuSaveVo.getBaseAttrs();
         attrValueService.saveAttrs(spuInfoEntity.getId(), baseAttrs);
+
+        List<Sku> skus = spuSaveVo.getSkus();
+        for(Sku item : skus) {
+            SkuInfoEntity skuInfoEntity = new SkuInfoEntity();
+            BeanUtils.copyProperties(item, skuInfoEntity);
+            skuInfoEntity.setBrandId(spuInfoEntity.getBrandId());
+            skuInfoEntity.setCatalogId(spuInfoEntity.getCatalogId());
+            skuInfoEntity.setSaleCount(0L);
+            skuInfoEntity.setSpuId(spuInfoEntity.getId());
+            skuInfoEntity.setSkuDefaultImg(item.getImages().stream().filter(img -> img.getDefaultImg() == 1).findFirst().orElseThrow(NullPointerException::new).getImgUrl());
+
+            skuInfoService.save(skuInfoEntity);
+
+            Long skuId = skuInfoEntity.getSkuId();
+
+            List<SkuImagesEntity> collect = item.getImages().stream()
+                    .map(img -> {
+                        SkuImagesEntity skuImagesEntity = new SkuImagesEntity();
+                        skuImagesEntity.setSkuId(skuId);
+                        skuImagesEntity.setImgUrl(img.getImgUrl());
+                        skuImagesEntity.setDefaultImg(img.getDefaultImg());
+                        return skuImagesEntity;
+                    }).collect(Collectors.toList());
+            skuImagesService.saveBatch(collect);
+
+            List<Attr> attrs = item.getAttr();
+            List<SkuSaleAttrValueEntity> collect1 = attrs.stream().map(a -> {
+                SkuSaleAttrValueEntity skuSaleAttrValueEntity = new SkuSaleAttrValueEntity();
+                BeanUtils.copyProperties(a, skuSaleAttrValueEntity);
+                skuSaleAttrValueEntity.setSkuId(skuId);
+                return skuSaleAttrValueEntity;
+            }).collect(Collectors.toList());
+
+            skuSaleAttrValueService.saveBatch(collect1);
+        }
 
     }
 

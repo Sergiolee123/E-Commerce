@@ -1,4 +1,4 @@
-package com.ecom.product.vo;
+package com.ecom.common.to;
 
 import lombok.Data;
 

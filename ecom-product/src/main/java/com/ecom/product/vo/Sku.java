@@ -1,6 +1,7 @@
 
 package com.ecom.product.vo;
 
+import com.ecom.common.to.MemberPrice;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 

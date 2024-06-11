@@ -3,10 +3,14 @@ package com.ecom.product.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.ecom.common.to.SkuReductionTo;
+import com.ecom.common.to.SpuBoundTo;
 import com.ecom.common.utils.PageUtils;
 import com.ecom.common.utils.Query;
+import com.ecom.common.utils.R;
 import com.ecom.product.dao.SpuInfoDao;
 import com.ecom.product.entity.*;
+import com.ecom.product.feign.CouponFeignService;
 import com.ecom.product.service.*;
 import com.ecom.product.vo.Attr;
 import com.ecom.product.vo.BaseAttr;
@@ -31,14 +35,16 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
     private final SkuInfoService skuInfoService;
     private final SkuImagesService skuImagesService;
     private final SkuSaleAttrValueService skuSaleAttrValueService;
+    private final CouponFeignService couponFeignService;
 
-    public SpuInfoServiceImpl(SpuInfoDescService infoDescService, SpuImagesService imagesService, ProductAttrValueService attrValueService, SkuInfoService skuInfoService, SkuImagesService skuImagesService, SkuSaleAttrValueService skuSaleAttrValueService) {
+    public SpuInfoServiceImpl(SpuInfoDescService infoDescService, SpuImagesService imagesService, ProductAttrValueService attrValueService, SkuInfoService skuInfoService, SkuImagesService skuImagesService, SkuSaleAttrValueService skuSaleAttrValueService, CouponFeignService couponFeignService) {
         this.infoDescService = infoDescService;
         this.imagesService = imagesService;
         this.attrValueService = attrValueService;
         this.skuInfoService = skuInfoService;
         this.skuImagesService = skuImagesService;
         this.skuSaleAttrValueService = skuSaleAttrValueService;
+        this.couponFeignService = couponFeignService;
     }
 
     @Override
@@ -105,7 +111,25 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
             }).collect(Collectors.toList());
 
             skuSaleAttrValueService.saveBatch(collect1);
+
+            SkuReductionTo skuReductionTo = new SkuReductionTo();
+            BeanUtils.copyProperties(item, skuReductionTo);
+            skuReductionTo.setSkuId(skuInfoEntity.getSkuId());
+            R r = couponFeignService.saveSkuReduction(skuReductionTo);
+            if(r.getCode() != 0) {
+                log.error("remote sku coupon save service fail");
+                throw
+            }
         }
+
+        SpuBoundTo spuBoundTo = new SpuBoundTo();
+        BeanUtils.copyProperties(spuSaveVo.getBounds(), spuBoundTo);
+        spuBoundTo.setSpuId(spuInfoEntity.getId());
+        R r = couponFeignService.saveSpuBounds(spuBoundTo);
+        if(r.getCode() != 0) {
+            log.error("remote spu coupon save service fail");
+        }
+
 
     }
 

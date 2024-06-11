@@ -57,7 +57,7 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
         return new PageUtils(page);
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Throwable.class)
     @Override
     public void saveSpuInfo(SpuSaveVo spuSaveVo) {
         SpuInfoEntity spuInfoEntity = new SpuInfoEntity();
@@ -118,7 +118,7 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
             R r = couponFeignService.saveSkuReduction(skuReductionTo);
             if(r.getCode() != 0) {
                 log.error("remote sku coupon save service fail");
-                throw
+                throw new RuntimeException("remote sku coupon save service fail");
             }
         }
 
@@ -128,6 +128,7 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
         R r = couponFeignService.saveSpuBounds(spuBoundTo);
         if(r.getCode() != 0) {
             log.error("remote spu coupon save service fail");
+            throw new RuntimeException("remote spu coupon save service fail");
         }
 
 

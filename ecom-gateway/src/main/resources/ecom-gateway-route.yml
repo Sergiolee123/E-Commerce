@@ -23,6 +23,13 @@ spring:
           filters:
             - RewritePath=/api/?(?<segment>.*), /$\{segment}
 
+        - id: ware_route
+          uri: lb://ecom-ware
+          predicates:
+            - Path=/api/ware/**
+          filters:
+            - RewritePath=/api/?(?<segment>.*), /$\{segment}
+
         - id: third_party_route
           uri: lb://ecom-third-party
           predicates:

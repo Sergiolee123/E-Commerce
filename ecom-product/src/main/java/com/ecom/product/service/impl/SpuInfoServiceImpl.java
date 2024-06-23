@@ -2,6 +2,7 @@ package com.ecom.product.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ecom.common.to.SkuReductionTo;
 import com.ecom.common.to.SpuBoundTo;
@@ -12,10 +13,8 @@ import com.ecom.product.dao.SpuInfoDao;
 import com.ecom.product.entity.*;
 import com.ecom.product.feign.CouponFeignService;
 import com.ecom.product.service.*;
-import com.ecom.product.vo.Attr;
-import com.ecom.product.vo.BaseAttr;
-import com.ecom.product.vo.Sku;
-import com.ecom.product.vo.SpuSaveVo;
+import com.ecom.product.vo.*;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -86,13 +85,14 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
             skuInfoEntity.setCatalogId(spuInfoEntity.getCatalogId());
             skuInfoEntity.setSaleCount(0L);
             skuInfoEntity.setSpuId(spuInfoEntity.getId());
-            skuInfoEntity.setSkuDefaultImg(item.getImages().stream().filter(img -> img.getDefaultImg() == 1).findFirst().orElseThrow(NullPointerException::new).getImgUrl());
+            skuInfoEntity.setSkuDefaultImg(item.getImages().stream().filter(img -> img.getDefaultImg() == 1).findFirst().orElse(new Image()).getImgUrl());
 
             skuInfoService.save(skuInfoEntity);
 
             Long skuId = skuInfoEntity.getSkuId();
 
             List<SkuImagesEntity> collect = item.getImages().stream()
+                    .filter(img -> StringUtils.isNotBlank(img.getImgUrl()))
                     .map(img -> {
                         SkuImagesEntity skuImagesEntity = new SkuImagesEntity();
                         skuImagesEntity.setSkuId(skuId);
@@ -137,6 +137,27 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
     @Override
     public void saveBaseSpuInfo(SpuInfoEntity spuInfoEntity) {
         this.baseMapper.insert(spuInfoEntity);
+    }
+
+    @Override
+    public PageUtils queryPageByCondition(Map<String, Object> params) {
+
+        String key = (String) params.get("key");
+        String status = (String) params.get("status");
+        String brandId = (String) params.get("brandId");
+        String catelogId = (String) params.get("catelogId");
+
+        IPage<SpuInfoEntity> page = this.page(
+                new Query<SpuInfoEntity>().getPage(params),
+                Wrappers.lambdaQuery(SpuInfoEntity.class)
+                        .and(StringUtils.isNotBlank(key) && !"0".equalsIgnoreCase(key), wq ->
+                                wq.eq(SpuInfoEntity::getId, key).or().eq(SpuInfoEntity::getSpuName, key))
+                        .eq(StringUtils.isNotBlank(status), SpuInfoEntity::getPublishStatus, status)
+                        .eq(StringUtils.isNotBlank(brandId) && !"0".equalsIgnoreCase(brandId), SpuInfoEntity::getBrandId, brandId)
+                        .eq(StringUtils.isNotBlank(catelogId) && !"0".equalsIgnoreCase(catelogId), SpuInfoEntity::getCatalogId, catelogId)
+        );
+
+        return new PageUtils(page);
     }
 
 

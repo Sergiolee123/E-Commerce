@@ -40,7 +40,7 @@ public class ProductAttrValueServiceImpl extends ServiceImpl<ProductAttrValueDao
         List<ProductAttrValueEntity> collect = baseAttrs.stream().map(attr -> {
             ProductAttrValueEntity attrValueEntity = new ProductAttrValueEntity();
             attrValueEntity.setAttrId(attr.getAttrId());
-            attrValueEntity.setAttrName(attrService.getById(attrValueEntity.getId()).getAttrName());
+            attrValueEntity.setAttrName(attrService.getById(attr.getAttrId()).getAttrName());
             attrValueEntity.setAttrValue(attr.getAttrValues());
             attrValueEntity.setQuickShow(attr.getShowDesc());
             attrValueEntity.setSpuId(id);

@@ -16,5 +16,7 @@ import java.util.Map;
 public interface WareSkuService extends IService<WareSkuEntity> {
 
     PageUtils queryPage(Map<String, Object> params);
+
+    PageUtils queryPageWithCondition(Map<String, Object> params);
 }
 

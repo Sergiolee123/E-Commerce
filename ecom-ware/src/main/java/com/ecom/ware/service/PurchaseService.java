@@ -3,7 +3,9 @@ package com.ecom.ware.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.ecom.common.utils.PageUtils;
 import com.ecom.ware.entity.PurchaseEntity;
+import com.ecom.ware.vo.MergeVo;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -18,5 +20,9 @@ public interface PurchaseService extends IService<PurchaseEntity> {
     PageUtils queryPage(Map<String, Object> params);
 
     PageUtils queryPageUnreceivePurchase(Map<String, Object> params);
+
+    void mergePurchase(MergeVo mergeVo);
+
+    void received(List<Long> ids);
 }
 

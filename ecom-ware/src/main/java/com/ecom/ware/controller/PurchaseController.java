@@ -4,10 +4,12 @@ import com.ecom.common.utils.PageUtils;
 import com.ecom.common.utils.R;
 import com.ecom.ware.entity.PurchaseEntity;
 import com.ecom.ware.service.PurchaseService;
+import com.ecom.ware.vo.MergeVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 
@@ -24,6 +26,18 @@ import java.util.Map;
 public class PurchaseController {
     @Autowired
     private PurchaseService purchaseService;
+
+    @PostMapping("/receive")
+    public R receive(@RequestParam List<Long> ids){
+        purchaseService.received(ids);
+        return R.ok();
+    }
+
+    @PostMapping("/merge")
+    public R mergePurchase(@RequestBody MergeVo mergeVo) {
+        purchaseService.mergePurchase(mergeVo);
+        return R.ok();
+    }
 
     @RequestMapping("/unreceive/list")
     //@RequiresPermissions("ware:purchase:list")

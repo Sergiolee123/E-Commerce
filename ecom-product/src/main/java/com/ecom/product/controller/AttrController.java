@@ -2,14 +2,16 @@ package com.ecom.product.controller;
 
 import com.ecom.common.utils.PageUtils;
 import com.ecom.common.utils.R;
+import com.ecom.product.entity.ProductAttrValueEntity;
 import com.ecom.product.service.AttrService;
+import com.ecom.product.service.ProductAttrValueService;
 import com.ecom.product.vo.AttrRespVo;
 import com.ecom.product.vo.AttrVo;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 
@@ -25,8 +27,15 @@ import java.util.Map;
 @RestController
 @RequestMapping("product/attr")
 public class AttrController {
-    @Autowired
-    private AttrService attrService;
+
+    private final AttrService attrService;
+
+    private final ProductAttrValueService productAttrValueService;
+
+    public AttrController(AttrService attrService, ProductAttrValueService productAttrValueService) {
+        this.attrService = attrService;
+        this.productAttrValueService = productAttrValueService;
+    }
 
     /**
      * 列表
@@ -37,6 +46,12 @@ public class AttrController {
         PageUtils page = attrService.queryPage(params);
 
         return R.ok().put("page", page);
+    }
+
+    @GetMapping("/base/listforspu/{spuId}")
+    public R baseAttrlistforspu(@PathVariable("spuId") Long spuId){
+        List<ProductAttrValueEntity> entities = productAttrValueService.baseAttrListForSpu(spuId);
+        return R.ok().put("data", entities);
     }
 
     @RequestMapping("/{attrType}/list/{catelogId}")
@@ -80,6 +95,14 @@ public class AttrController {
     //@RequiresPermissions("product:attr:update")
     public R update(@RequestBody AttrVo attr){
 		attrService.updateAttr(attr);
+
+        return R.ok();
+    }
+
+    @PostMapping("/update/{spuId}")
+    //@RequiresPermissions("product:attr:update")
+    public R updateSpuAttr(@PathVariable("spuId") Long spuId, @RequestBody List<ProductAttrValueEntity> entities){
+        productAttrValueService.updateSpuAttr(spuId, entities);
 
         return R.ok();
     }

@@ -5,6 +5,7 @@ import com.ecom.common.utils.R;
 import com.ecom.ware.entity.PurchaseEntity;
 import com.ecom.ware.service.PurchaseService;
 import com.ecom.ware.vo.MergeVo;
+import com.ecom.ware.vo.PurchaseDoneVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,6 +27,12 @@ import java.util.Map;
 public class PurchaseController {
     @Autowired
     private PurchaseService purchaseService;
+
+    @PostMapping("/finish")
+    public R finish(@RequestParam PurchaseDoneVo doneVo){
+        purchaseService.done(doneVo);
+        return R.ok();
+    }
 
     @PostMapping("/receive")
     public R receive(@RequestParam List<Long> ids){

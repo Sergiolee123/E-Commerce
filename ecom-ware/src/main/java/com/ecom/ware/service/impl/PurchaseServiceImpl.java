@@ -12,10 +12,14 @@ import com.ecom.ware.entity.PurchaseDetailEntity;
 import com.ecom.ware.entity.PurchaseEntity;
 import com.ecom.ware.service.PurchaseDetailService;
 import com.ecom.ware.service.PurchaseService;
+import com.ecom.ware.service.WareSkuService;
 import com.ecom.ware.vo.MergeVo;
+import com.ecom.ware.vo.PurchaseDoneVo;
+import com.ecom.ware.vo.PurchaseItemDoneVo;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -26,9 +30,11 @@ import java.util.stream.Collectors;
 public class PurchaseServiceImpl extends ServiceImpl<PurchaseDao, PurchaseEntity> implements PurchaseService {
 
     private final PurchaseDetailService purchaseDetailService;
+    private final WareSkuService wareSkuService;
 
-    public PurchaseServiceImpl(PurchaseDetailService purchaseDetailService) {
+    public PurchaseServiceImpl(PurchaseDetailService purchaseDetailService, WareSkuService wareSkuService) {
         this.purchaseDetailService = purchaseDetailService;
+        this.wareSkuService = wareSkuService;
     }
 
     @Override
@@ -111,6 +117,36 @@ public class PurchaseServiceImpl extends ServiceImpl<PurchaseDao, PurchaseEntity
             }).collect(Collectors.toList());
             purchaseDetailService.updateBatchById(collect1);
         });
+    }
+
+    @Transactional
+    @Override
+    public void done(PurchaseDoneVo doneVo) {
+        Long id = doneVo.getId();
+
+        boolean flag = true;
+        List<PurchaseItemDoneVo> items = doneVo.getItems();
+        List<PurchaseDetailEntity> update = new ArrayList<>();
+        for(PurchaseItemDoneVo item : items){
+            PurchaseDetailEntity purchaseDetailEntity = new PurchaseDetailEntity();
+            if(item.getStatus() == WareConstant.PurchaseDetailStatusEnum.HAS_ERROR.getCode()){
+                flag = false;
+                purchaseDetailEntity.setStatus(item.getStatus());
+            } else {
+                purchaseDetailEntity.setStatus(WareConstant.PurchaseDetailStatusEnum.FINISHED.getCode());
+                PurchaseDetailEntity entity = purchaseDetailService.getById(item.getItemId());
+                wareSkuService.addStock(entity.getSkuId(), entity.getWareId(), entity.getSkuNum());
+            }
+            purchaseDetailEntity.setId(item.getItemId());
+            update.add(purchaseDetailEntity);
+        }
+        purchaseDetailService.updateBatchById(update);
+
+        PurchaseEntity purchaseEntity = new PurchaseEntity();
+        purchaseEntity.setId(id);
+        purchaseEntity.setStatus(flag?WareConstant.PurchaseStatusEnum.FINISHED.getCode():WareConstant.PurchaseStatusEnum.HAS_ERROR.getCode());
+        purchaseEntity.setUpdateTime(new Date());
+        this.updateById(purchaseEntity);
     }
 
 }

@@ -1,0 +1,4 @@
+name: ecom
+include:
+  - infra.yml
+  - spring-cloud.yml

@@ -1,4 +1,4 @@
-USE `ecom_oms`;
+USE `ecom_pms`;
 
 DROP TABLE IF EXISTS `pms_category`;
 

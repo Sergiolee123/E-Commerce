@@ -1,8 +1,7 @@
-version: '2.29.3'
 name: ecom_infra
 services:
   mysql:
-    image: mysql:5.7
+    image: mysql:8.0.38
     container_name: ecom_mysql
     ports:
       - 3306:3306
@@ -16,7 +15,11 @@ services:
       - mysql_data:/var/lib/mysql
       - mysql_log:/var/log/mysql
       - mysql_config:/etc/mysql/conf.d
-      - ./../sql:/docker-entrypoint-initdb.d
+      - ./../../sql:/docker-entrypoint-initdb.d
+    deploy:
+      resources:
+        limits:
+          memory: 1G
 
   redis:
     image: redis:7.4.0
@@ -27,9 +30,13 @@ services:
       - redis_data:/data
       - redis_config:/etc/redis/redis_default.conf
     command: redis-server /etc/redis/redis_default.conf --appendonly yes
+    deploy:
+      resources:
+        limits:
+          memory: 256M
 
   elasticsearch:
-    image: elasticsearch:7.4.2
+    image: elasticsearch:8.15.1
     container_name: ecom_elasticsearch
     ports:
       - 9200:9200
@@ -45,10 +52,10 @@ services:
     deploy:
       resources:
         limits:
-          memory: 8G
+          memory: 2G
 
   kibana:
-    image: kibana:7.4.2
+    image: kibana:8.15.1
     container_name: ecom_kibana
     ports:
       - 5601:5601
@@ -56,6 +63,10 @@ services:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
     volumes:
       - kibana_config:/usr/share/kibana/config
+    deploy:
+      resources:
+        limits:
+          memory: 512M
 
 volumes:
   mysql_data: {}

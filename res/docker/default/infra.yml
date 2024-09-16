@@ -1,0 +1,68 @@
+name: ecom_infra
+services:
+  mysql:
+    image: mysql:5.7
+    container_name: ecom_mysql
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_USER=local
+      - MYSQL_PASSWORD=local
+      - MYSQL_DATABASE=ecom
+      - LANG=C.UTF-8
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - mysql_log:/var/log/mysql
+      - mysql_config:/etc/mysql/conf.d
+      - ./../../sql:/docker-entrypoint-initdb.d
+
+  redis:
+    image: redis:7.4.0
+    container_name: ecom_redis
+    ports:
+      - 6379:6379
+    volumes:
+      - redis_data:/data
+      - redis_config:/etc/redis/redis_default.conf
+    command: redis-server /etc/redis/redis_default.conf --appendonly yes
+
+  elasticsearch:
+    image: elasticsearch:7.4.2
+    container_name: ecom_elasticsearch
+    ports:
+      - 9200:9200
+      - 9300:9300
+    environment:
+      - node.name=elasticsearch
+      - cluster.name=es-docker-cluster
+      - discovery.type=single-node
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+      - elasticsearch_config:/usr/share/elasticsearch/config
+      - elasticsearch_plugins:/usr/share/elasticsearch/plugins
+    deploy:
+      resources:
+        limits:
+          memory: 16G
+
+  kibana:
+    image: kibana:7.4.2
+    container_name: ecom_kibana
+    ports:
+      - 5601:5601
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    volumes:
+      - kibana_config:/usr/share/kibana/config
+
+volumes:
+  mysql_data: {}
+  mysql_log: {}
+  mysql_config: {}
+  redis_data: {}
+  redis_config: {}
+  elasticsearch_data: {}
+  elasticsearch_config: {}
+  elasticsearch_plugins: {}
+  kibana_config: {}

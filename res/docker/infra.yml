@@ -1,4 +1,3 @@
-version: '2.29.3'
 name: ecom_infra
 services:
   mysql:

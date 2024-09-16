@@ -1,0 +1,5 @@
+version: '2.29.3'
+name: ecom
+include:
+  - infra.yml
+  - spring-cloud.yml

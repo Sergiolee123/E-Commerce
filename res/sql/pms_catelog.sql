@@ -1,3 +1,5 @@
+USE `ecom_oms`;
+
 DROP TABLE IF EXISTS `pms_category`;
 
 CREATE TABLE `pms_category`

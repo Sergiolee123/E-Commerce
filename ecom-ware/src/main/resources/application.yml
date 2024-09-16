@@ -2,13 +2,13 @@ spring:
   datasource:
     username: root
     password: root
-    url: jdbc:mysql://192.168.200.130:3306/ecom_wms?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://127.0.0.1:3306/ecom_wms?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
     driver-class-name: com.mysql.jdbc.Driver
 
   cloud:
     nacos:
       discovery:
-        server-addr: 192.168.200.130:8848
+        server-addr: 127.0.0.1:8848
   application:
     name: ecom-ware
   jackson:

@@ -1,0 +1,16 @@
+name: ecom-nginx
+services:
+  nginx:
+    image: nginx:1.10
+    container_name: ecom_ik_nginx
+    ports:
+      - 80:80
+    volumes:
+      - ik_nginx_html:/usr/share/nginx/html
+      - ik_nginx_logs:/var/log/nginx
+      - ik_nginx_config:/etc/nginx
+
+volumes:
+  ik_nginx_html: {}
+  ik_nginx_logs: {}
+  ik_nginx_config: {}

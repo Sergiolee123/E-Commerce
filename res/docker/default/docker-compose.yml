@@ -1,4 +1,5 @@
 name: ecom
 include:
   - infra.yml
+  - nginx.yml
   - spring-cloud.yml

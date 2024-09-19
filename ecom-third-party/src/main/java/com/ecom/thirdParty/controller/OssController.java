@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("thirdparty/oss")
 public class OssController {
 
-    private UserSasService userSasService;
+    private final UserSasService userSasService;
 
-    private BlobServiceClient blobServiceClient = BlobServiceClientFactory.INSTANT.getClient();
+    private final BlobServiceClient blobServiceClient = BlobServiceClientFactory.INSTANT.getClient();
 
     @Autowired
     public OssController(UserSasService userSasService) {

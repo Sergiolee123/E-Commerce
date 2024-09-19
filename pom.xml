@@ -24,6 +24,7 @@
         <module>ecom-common</module>
         <module>ecom-gateway</module>
         <module>ecom-third-party</module>
+        <module>ecom-search</module>
     </modules>
 
 

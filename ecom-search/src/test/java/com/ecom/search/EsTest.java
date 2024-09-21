@@ -6,6 +6,7 @@ import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,16 @@ public class EsTest {
         searchSourceBuilder.size(10);
         searchRequest.source(searchSourceBuilder);
         SearchResponse search = client.search(searchRequest, RequestOptions.DEFAULT);
+        System.out.println(search);
+    }
+
+    @Test
+    public void searchData2() throws IOException {
+        SearchRequest searchRequest = new SearchRequest("bank");
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.query(QueryBuilders.termQuery("user", "kimchy"));
+        SearchRequest source = searchRequest.source(searchSourceBuilder);
+        SearchResponse search = client.search(source, RequestOptions.DEFAULT);
         System.out.println(search);
     }
 

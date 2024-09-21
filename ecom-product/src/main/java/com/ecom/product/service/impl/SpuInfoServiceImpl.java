@@ -4,14 +4,18 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.ecom.common.constant.ProductConstant;
 import com.ecom.common.to.SkuReductionTo;
 import com.ecom.common.to.SpuBoundTo;
+import com.ecom.common.to.es.SkuEsModel;
 import com.ecom.common.utils.PageUtils;
 import com.ecom.common.utils.Query;
 import com.ecom.common.utils.R;
 import com.ecom.product.dao.SpuInfoDao;
 import com.ecom.product.entity.*;
 import com.ecom.product.feign.CouponFeignService;
+import com.ecom.product.feign.SearchFeignService;
+import com.ecom.product.feign.WareFeignService;
 import com.ecom.product.service.*;
 import com.ecom.product.vo.*;
 import org.apache.commons.lang.StringUtils;
@@ -19,9 +23,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -35,8 +37,13 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
     private final SkuImagesService skuImagesService;
     private final SkuSaleAttrValueService skuSaleAttrValueService;
     private final CouponFeignService couponFeignService;
+    private final BrandService brandService;
+    private final CategoryService categoryService;
+    private final AttrServiceImpl attrService;
+    private final WareFeignService wareFeignService;
+    private final SearchFeignService searchFeignService;
 
-    public SpuInfoServiceImpl(SpuInfoDescService infoDescService, SpuImagesService imagesService, ProductAttrValueService attrValueService, SkuInfoService skuInfoService, SkuImagesService skuImagesService, SkuSaleAttrValueService skuSaleAttrValueService, CouponFeignService couponFeignService) {
+    public SpuInfoServiceImpl(SpuInfoDescService infoDescService, SpuImagesService imagesService, ProductAttrValueService attrValueService, SkuInfoService skuInfoService, SkuImagesService skuImagesService, SkuSaleAttrValueService skuSaleAttrValueService, CouponFeignService couponFeignService, BrandService brandService, CategoryService categoryService, AttrServiceImpl attrService, WareFeignService wareFeignService, SearchFeignService searchFeignService) {
         this.infoDescService = infoDescService;
         this.imagesService = imagesService;
         this.attrValueService = attrValueService;
@@ -44,6 +51,11 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
         this.skuImagesService = skuImagesService;
         this.skuSaleAttrValueService = skuSaleAttrValueService;
         this.couponFeignService = couponFeignService;
+        this.brandService = brandService;
+        this.categoryService = categoryService;
+        this.attrService = attrService;
+        this.wareFeignService = wareFeignService;
+        this.searchFeignService = searchFeignService;
     }
 
     @Override
@@ -158,6 +170,72 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
         );
 
         return new PageUtils(page);
+    }
+
+    @Transactional(rollbackFor = Throwable.class)
+    @Override
+    public void up(Long spuId) {
+
+        List<ProductAttrValueEntity> productAttrValueEntities = attrValueService.baseAttrListForSpu(spuId);
+        List<Long> collectAttrId = productAttrValueEntities.stream()
+                .map(ProductAttrValueEntity::getAttrId)
+                .collect(Collectors.toList());
+
+        List<Long> searchAttrIds = attrService.selectSearchAttrIds(collectAttrId);
+
+        Set<Long> set = new HashSet<>(searchAttrIds);
+
+        List<SkuEsModel.Attrs> attrsList = productAttrValueEntities.stream()
+                .filter(item -> set.contains(item.getAttrId()))
+                .map(item -> {
+                    SkuEsModel.Attrs attrs = new SkuEsModel.Attrs();
+                    BeanUtils.copyProperties(item, attrs);
+                    return attrs;
+                })
+                .collect(Collectors.toList());
+
+        List<SkuInfoEntity> skuInfoEntities = skuInfoService.getSkusBySpuId(spuId);
+
+        R skuHasStock = wareFeignService.getSkuHasStock(skuInfoEntities.stream().map(SkuInfoEntity::getSkuId).collect(Collectors.toList()));
+        List<Map<String, Object>> data = (List<Map<String, Object>>) skuHasStock.get("data");
+        Map<Long, Boolean> hasStockMap = new HashMap<>(data.size());
+        for (Map<String, Object> item : data) {
+            hasStockMap.put(((Integer) item.get("skuId")).longValue(), (Boolean) item.get("hasStock"));
+        }
+
+        List<SkuEsModel> upProducts = skuInfoEntities.stream().map(skuInfoEntity -> {
+            SkuEsModel esModel = new SkuEsModel();
+            BeanUtils.copyProperties(skuInfoEntity, esModel);
+            esModel.setSkuPrice(skuInfoEntity.getPrice());
+            esModel.setSkuImg(skuInfoEntity.getSkuDefaultImg());
+
+            //todo: check warehouse stock
+            esModel.setHasStock(hasStockMap.get(skuInfoEntity.getSkuId()));
+            //todo: check hot score
+            esModel.setHotScore(0L);
+
+            BrandEntity brandEntity = brandService.getById(skuInfoEntity.getBrandId());
+            esModel.setBrandName(brandEntity.getName());
+            esModel.setBrandImg(brandEntity.getLogo());
+
+            CategoryEntity categoryEntity = categoryService.getById(skuInfoEntity.getCatalogId());
+            esModel.setCatalogId(skuInfoEntity.getCatalogId());
+            esModel.setCatalogName(categoryEntity.getName());
+
+            //todo: add attrs
+            esModel.setAttrs(attrsList);
+            return esModel;
+        }).collect(Collectors.toList());
+
+        //todo: send to es
+        R r = searchFeignService.productStatusUp(upProducts);
+
+        if(r.getCode() == 0) {
+            baseMapper.updateSpuStatus(spuId, ProductConstant.StatusEnum.SPU_UP.getCode());
+        } else {
+
+        }
+
     }
 
 

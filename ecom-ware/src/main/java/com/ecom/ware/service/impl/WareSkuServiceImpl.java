@@ -13,20 +13,25 @@ import com.ecom.ware.dao.WareSkuDao;
 import com.ecom.ware.entity.WareSkuEntity;
 import com.ecom.ware.feign.ProductFeignService;
 import com.ecom.ware.service.WareSkuService;
+import com.ecom.ware.vo.SkuHasStockVo;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 
 @Service("wareSkuService")
 public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> implements WareSkuService {
 
     private final ProductFeignService productFeignService;
+    private final WareSkuDao wareSkuDao;
 
-    public WareSkuServiceImpl(ProductFeignService productFeignService) {
+    public WareSkuServiceImpl(ProductFeignService productFeignService, WareSkuDao wareSkuDao) {
         this.productFeignService = productFeignService;
+        this.wareSkuDao = wareSkuDao;
     }
 
     @Override
@@ -85,6 +90,18 @@ public class WareSkuServiceImpl extends ServiceImpl<WareSkuDao, WareSkuEntity> i
                     .eq(WareSkuEntity::getSkuId, skuId)
                     .eq(WareSkuEntity::getWareId, wareId));
         }
+    }
+
+    @Override
+    public List<SkuHasStockVo> getSkusHasStock(List<Long> skuIds) {
+        return skuIds.stream().map(skuId -> {
+            SkuHasStockVo vo = new SkuHasStockVo();
+
+            long stock = baseMapper.getSkuStock(skuId);
+            vo.setSkuId(skuId);
+            vo.setHasStock(stock > 0);
+            return vo;
+        }).collect(Collectors.toList());
     }
 
 }

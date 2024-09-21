@@ -17,5 +17,12 @@
         <result property="showDesc" column="show_desc"/>
     </resultMap>
 
+    <select id="selectSearchAttrIds" resultType="Long">
+        SELECT attr_id FROM `pms_attr` where attr_id IN 
+         <foreach collection="attrIds" item="id" separator="," open="(" close=")">
+             #{id}
+         </foreach>
+         AND search_type = 1
+    </select>
 
 </mapper>

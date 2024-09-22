@@ -9,6 +9,7 @@ import com.ecom.product.dao.CategoryDao;
 import com.ecom.product.entity.CategoryEntity;
 import com.ecom.product.service.CategoryBrandRelationService;
 import com.ecom.product.service.CategoryService;
+import com.ecom.product.vo.Catelog2Vo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,7 +23,6 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 
     @Autowired
     private CategoryBrandRelationService categoryBrandRelationService;
-
 
 
     @Override
@@ -90,6 +90,42 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
     public void updateCascade(CategoryEntity category) {
         this.updateById(category);
         categoryBrandRelationService.updateCategory(category.getCatId(), category.getName());
+    }
+
+    @Override
+    public List<CategoryEntity> getLevel1Categories() {
+        return baseMapper.selectList(new QueryWrapper<CategoryEntity>().eq("cat_level", "1"));
+    }
+
+    @Override
+    public Map<String, List<Catelog2Vo>> getCatalogJson() {
+        List<CategoryEntity> level1Categories = getLevel1Categories();
+
+        return level1Categories.stream()
+                .collect(Collectors.toMap(
+                        k -> k.getCatId().toString(),
+                        v -> {
+                            List<CategoryEntity> categoryEntities = baseMapper.selectList(new QueryWrapper<CategoryEntity>()
+                                    .eq("parent_cid", v.getCatId()));
+
+                            return categoryEntities.stream().map(item -> {
+                                Catelog2Vo catelog2Vo = new Catelog2Vo(v.getCatId().toString(), null, item.getCatId().toString(), item.getName());
+
+                                List<CategoryEntity> categoryEntities3 = baseMapper.selectList(new QueryWrapper<CategoryEntity>()
+                                        .eq("parent_cid", item.getCatId()));
+
+                                catelog2Vo.setCatalog3List(
+                                        categoryEntities3.stream().map(item3 -> new Catelog2Vo.Catelog3Vo(item.getCatId().toString(), item3.getCatId().toString(), item3.getName()))
+                                                .collect(Collectors.toList())
+                                );
+
+                                return catelog2Vo;
+
+                            }).collect(Collectors.toList());
+
+                        }
+                ));
+
     }
 
 }

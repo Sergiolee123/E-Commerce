@@ -10,19 +10,32 @@ import com.ecom.product.entity.CategoryEntity;
 import com.ecom.product.service.CategoryBrandRelationService;
 import com.ecom.product.service.CategoryService;
 import com.ecom.product.vo.Catelog2Vo;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.SneakyThrows;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 
 @Service("categoryService")
 public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity> implements CategoryService {
 
-    @Autowired
-    private CategoryBrandRelationService categoryBrandRelationService;
+    private final CategoryBrandRelationService categoryBrandRelationService;
+
+    private final StringRedisTemplate redisTemplate;
+    private final ObjectMapper objectMapper;
+
+    public CategoryServiceImpl(CategoryBrandRelationService categoryBrandRelationService, StringRedisTemplate redisTemplate, ObjectMapper objectMapper) {
+        this.categoryBrandRelationService = categoryBrandRelationService;
+        this.redisTemplate = redisTemplate;
+        this.objectMapper = objectMapper;
+    }
 
 
     @Override
@@ -98,10 +111,30 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
     }
 
     @Override
+    @SneakyThrows
     public Map<String, List<Catelog2Vo>> getCatalogJson() {
+        Map<String, List<Catelog2Vo>> catalogJson;
+        String json = redisTemplate.opsForValue().get("catalogJson");
+        if(StringUtils.isEmpty(json)) {
+            catalogJson = getCatalogJsonFromDb();
+        } else {
+            catalogJson = objectMapper.readValue(json, new TypeReference<Map<String, List<Catelog2Vo>>>() {});
+        }
+        return catalogJson;
+    }
+
+
+    @SneakyThrows
+    public Map<String, List<Catelog2Vo>> getCatalogJsonFromDb() {
+
+        String json = redisTemplate.opsForValue().get("catalogJson");
+        if(StringUtils.isNotEmpty(json)) {
+            return objectMapper.readValue(json, new TypeReference<Map<String, List<Catelog2Vo>>>() {});
+        }
+
         List<CategoryEntity> level1Categories = getLevel1Categories();
 
-        return level1Categories.stream()
+        Map<String, List<Catelog2Vo>> catalogJson = level1Categories.stream()
                 .collect(Collectors.toMap(
                         k -> k.getCatId().toString(),
                         v -> {
@@ -125,6 +158,10 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 
                         }
                 ));
+
+        redisTemplate.opsForValue().set("catalogJson", objectMapper.writeValueAsString(catalogJson), 1, TimeUnit.DAYS);
+
+        return catalogJson;
 
     }
 

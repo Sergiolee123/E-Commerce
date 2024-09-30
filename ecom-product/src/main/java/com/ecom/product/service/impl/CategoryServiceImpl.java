@@ -14,6 +14,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -105,6 +106,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         categoryBrandRelationService.updateCategory(category.getCatId(), category.getName());
     }
 
+    @Cacheable(value = {"category"}, key = "#root.method.name")
     @Override
     public List<CategoryEntity> getLevel1Categories() {
         return baseMapper.selectList(new QueryWrapper<CategoryEntity>().eq("cat_level", "1"));

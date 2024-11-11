@@ -209,7 +209,6 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
             esModel.setSkuPrice(skuInfoEntity.getPrice());
             esModel.setSkuImg(skuInfoEntity.getSkuDefaultImg());
 
-            //todo: check warehouse stock
             esModel.setHasStock(hasStockMap.get(skuInfoEntity.getSkuId()));
             //todo: check hot score
             esModel.setHotScore(0L);
@@ -222,12 +221,10 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
             esModel.setCatalogId(skuInfoEntity.getCatalogId());
             esModel.setCatalogName(categoryEntity.getName());
 
-            //todo: add attrs
             esModel.setAttrs(attrsList);
             return esModel;
         }).collect(Collectors.toList());
 
-        //todo: send to es
         R r = searchFeignService.productStatusUp(upProducts);
 
         if(r.getCode() == 0) {

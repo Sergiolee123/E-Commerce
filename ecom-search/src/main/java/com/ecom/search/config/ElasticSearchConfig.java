@@ -10,11 +10,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class ElasticSearchConfig {
 
-    public static final RequestOptions COMMON_OPTIONS;
-    static {
-        RequestOptions.Builder builder = RequestOptions.DEFAULT.toBuilder();
-        COMMON_OPTIONS = builder.build();
-    }
+    public static final RequestOptions COMMON_OPTIONS = RequestOptions.DEFAULT.toBuilder().build();
 
     @Bean
     public RestHighLevelClient restHighLevelClient() {

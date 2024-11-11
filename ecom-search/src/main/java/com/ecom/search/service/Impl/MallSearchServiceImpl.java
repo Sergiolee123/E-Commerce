@@ -6,6 +6,7 @@ import com.ecom.search.service.MallSearchService;
 import com.ecom.search.vo.SearchParam;
 import com.ecom.search.vo.SearchResult;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.action.search.SearchRequest;
@@ -15,10 +16,16 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.NestedQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.RangeQueryBuilder;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.bucket.nested.NestedAggregationBuilder;
+import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
+import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+@Slf4j
 @Service
 public class MallSearchServiceImpl implements MallSearchService {
 
@@ -42,7 +49,6 @@ public class MallSearchServiceImpl implements MallSearchService {
         SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
 
         // fuzz search, filter
-
         BoolQueryBuilder query = QueryBuilders.boolQuery();
 
         if (StringUtils.isNotEmpty(searchParam.getKeyword())) {
@@ -57,7 +63,7 @@ public class MallSearchServiceImpl implements MallSearchService {
             query.filter(QueryBuilders.termsQuery("brandId", searchParam.getBrandId()));
         }
 
-        if(!CollectionUtils.isEmpty(searchParam.getAttrs())) {
+        if (!CollectionUtils.isEmpty(searchParam.getAttrs())) {
             for (String attrStr : searchParam.getAttrs()) {
                 BoolQueryBuilder nestBoolQuery = QueryBuilders.boolQuery();
                 String[] attrArr = attrStr.split("_");
@@ -85,13 +91,66 @@ public class MallSearchServiceImpl implements MallSearchService {
                 rangeQuery.gte(inputs[0]);
             }
             query.filter(rangeQuery);
-        }
 
+        }
         sourceBuilder.query(query);
 
         // sorting, paging, highlight
+        if (StringUtils.isNotEmpty(searchParam.getSort())) {
+            String[] sortArgs = searchParam.getSort().split("_");
+            sourceBuilder.sort(sortArgs[0], "asc".equalsIgnoreCase(sortArgs[1]) ? SortOrder.ASC : SortOrder.DESC);
+        }
+
+        if (searchParam.getPageNum() != null) {
+            sourceBuilder.from((searchParam.getPageNum() * EsConstant.PRODUCT_PAGE_SIZE) - EsConstant.PRODUCT_PAGE_SIZE);
+            sourceBuilder.size(EsConstant.PRODUCT_PAGE_SIZE);
+        } else {
+            sourceBuilder.from(0);
+            sourceBuilder.size(EsConstant.PRODUCT_PAGE_SIZE);
+        }
+
+        if (StringUtils.isNotEmpty(searchParam.getKeyword())) {
+            HighlightBuilder highlightBuilder = new HighlightBuilder();
+            highlightBuilder.field("skuTitle");
+            highlightBuilder.preTags("<b style='color:red'>");
+            highlightBuilder.postTags("</b>");
+            sourceBuilder.highlighter(highlightBuilder);
+        }
+
 
         // aggregation
+        TermsAggregationBuilder brandAgg = AggregationBuilders.terms("brand_agg");
+        brandAgg.field("brandId");
+        brandAgg.size(50);
+        TermsAggregationBuilder brandNameAgg = AggregationBuilders.terms("brand_name_agg");
+        brandNameAgg.field("brandName");
+        brandNameAgg.size(1);
+        brandAgg.subAggregation(brandNameAgg);
+        TermsAggregationBuilder brandImgAgg = AggregationBuilders.terms("brand_img_agg");
+        brandImgAgg.field("brandImg");
+        brandImgAgg.size(1);
+        brandAgg.subAggregation(brandImgAgg);
+        sourceBuilder.aggregation(brandAgg);
+
+        TermsAggregationBuilder catalogAgg = AggregationBuilders.terms("catalog_agg");
+        catalogAgg.field("catalogId");
+        catalogAgg.size(50);
+        TermsAggregationBuilder catalogNameAgg = AggregationBuilders.terms("catalog_name_agg");
+        catalogNameAgg.field("catalogName");
+        catalogNameAgg.size(1);
+        catalogAgg.subAggregation(catalogNameAgg);
+        sourceBuilder.aggregation(catalogAgg);
+
+        NestedAggregationBuilder attrAgg = AggregationBuilders.nested("attr_agg", "attrs");
+        TermsAggregationBuilder attrIdAgg = AggregationBuilders.terms("attr_id_agg").field("attrs.attrId").size(50);
+        TermsAggregationBuilder attrNameAgg = AggregationBuilders.terms("attr_name_agg").field("attrs.attrName").size(1);
+        attrIdAgg.subAggregation(attrNameAgg);
+        TermsAggregationBuilder attrValueAgg = AggregationBuilders.terms("attr_value_agg").field("attrs.attrValue").size(50);
+        attrIdAgg.subAggregation(attrValueAgg);
+        attrAgg.subAggregation(attrIdAgg);
+        sourceBuilder.aggregation(attrAgg);
+
+        log.info(sourceBuilder.toString());
 
         return new SearchRequest(new String[]{EsConstant.PRODUCT_INDEX}, sourceBuilder);
     }

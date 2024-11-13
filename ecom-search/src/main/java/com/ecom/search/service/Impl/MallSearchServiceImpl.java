@@ -188,6 +188,9 @@ public class MallSearchServiceImpl implements MallSearchService {
         if(hits.getHits() != null) {
             for (SearchHit hit : hits.getHits()) {
                 SkuEsModel esModel = objectMapper.readValue(hit.getSourceAsString(), SkuEsModel.class);
+                if(StringUtils.isNotEmpty(searchParam.getKeyword())) {
+                    esModel.setSkuTitle(hit.getHighlightFields().get("skuTitle").getFragments()[0].string());
+                }
                 esModels.add(esModel);
             }
         }

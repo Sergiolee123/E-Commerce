@@ -41,6 +41,18 @@ public class RRException extends RuntimeException {
 		this.code = code;
 	}
 
+	public RRException(BizCodeEnum bizCodeEnum) {
+		super(bizCodeEnum.getMsg());
+		this.msg = bizCodeEnum.getMsg();
+		this.code = bizCodeEnum.getCode();
+	}
+
+	public RRException(BizCodeEnum bizCodeEnum, Throwable e) {
+		super(bizCodeEnum.getMsg(), e);
+		this.msg = bizCodeEnum.getMsg();
+		this.code = bizCodeEnum.getCode();
+	}
+
 	public String getMsg() {
 		return msg;
 	}

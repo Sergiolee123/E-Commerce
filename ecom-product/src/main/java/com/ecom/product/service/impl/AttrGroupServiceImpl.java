@@ -11,9 +11,9 @@ import com.ecom.product.entity.AttrGroupEntity;
 import com.ecom.product.service.AttrGroupService;
 import com.ecom.product.service.AttrService;
 import com.ecom.product.vo.AttrGroupWithAttrsVo;
+import com.ecom.product.vo.SkuItemAttrGroupVo;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,8 +24,12 @@ import java.util.stream.Collectors;
 @Service("attrGroupService")
 public class AttrGroupServiceImpl extends ServiceImpl<AttrGroupDao, AttrGroupEntity> implements AttrGroupService {
 
-    @Autowired
-    private AttrService attrService;
+
+    private final AttrService attrService;
+
+    public AttrGroupServiceImpl(AttrService attrService) {
+        this.attrService = attrService;
+    }
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -66,6 +70,11 @@ public class AttrGroupServiceImpl extends ServiceImpl<AttrGroupDao, AttrGroupEnt
             return attrGroupWithAttrsVo;
         }).collect(Collectors.toList());
 
+    }
+
+    @Override
+    public List<SkuItemAttrGroupVo> getAttrGroupWithAttrsBySpuId(Long spuId, Long catalogId) {
+        return this.getBaseMapper().getAttrGroupWithAttrsBySpuId(spuId, catalogId);
     }
 
 }

@@ -2,10 +2,12 @@ package com.ecom.product.dao;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.ecom.product.entity.AttrGroupEntity;
+import com.ecom.product.vo.SkuItemAttrGroupVo;
 import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -20,4 +22,6 @@ public interface AttrGroupDao extends BaseMapper<AttrGroupEntity> {
 
     @MapKey("attrGroupId")
     Map<Long, AttrGroupEntity> getAttrGroupIdMap(Collection<Long> attrGroupIds);
+
+    List<SkuItemAttrGroupVo> getAttrGroupWithAttrsBySpuId(Long spuId, Long catalogId);
 }

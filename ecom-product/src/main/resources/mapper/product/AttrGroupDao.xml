@@ -25,5 +25,28 @@
         </where>
     </select>
 
+    <resultMap id="spuItemAttrGroupVo" type="com.ecom.product.vo.SkuItemAttrGroupVo">
+        <result property="groupName" column="attr_group_name"></result>
+        <collection property="attrs" ofType="com.ecom.product.vo.SkuBaseAttrVo">
+            <result column="attr_name" property="attrName"></result>
+            <result column="attr_value" property="attrValue"></result>
+        </collection>
+    </resultMap>
+
+    <select id="getAttrGroupWithAttrsBySpuId" resultMap="spuItemAttrGroupVo">
+        SELECT
+            pav.`spu_id` ,
+            ag.`attr_group_name`,
+            ag.`attr_group_id`,
+            aar.`attr_id`,
+                attr.`attr_name`,
+                pav.`attr_value`
+        FROM ecom_pms.`pms_attr_group` ag
+LEFT JOIN ecom_pms.`pms_attr_attrgroup_relation` aar ON aar.`attr_group_id` = ag.`attr_group_id`
+LEFT JOIN ecom_pms.`pms_attr` attr ON attr.`attr_id` = aar.`attr_id`
+LEFT JOIN ecom_pms.`pms_product_attr_value` pav ON pav.`attr_id` = attr.`attr_id`
+WHERE ag.`catelog_id` = #{catalogId} AND pav.`spu_id` = #{spuId}
+    </select>
+
 
 </mapper>

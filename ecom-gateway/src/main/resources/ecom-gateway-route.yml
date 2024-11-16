@@ -54,7 +54,7 @@ spring:
         - id: gulimall-host-route
           uri: lb://ecom-product
           predicates:
-            - Host=gulimall.com,www.gulimall.com
+            - Host=gulimall.com,www.gulimall.com,item.gulimall.com
 
         - id: gulimall-search-route
           uri: lb://ecom-search

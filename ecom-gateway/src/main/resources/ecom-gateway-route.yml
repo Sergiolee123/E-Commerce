@@ -60,3 +60,8 @@ spring:
           uri: lb://ecom-search
           predicates:
             - Host=search.gulimall.com
+
+        - id: gulimall-auth-route
+          uri: lb://ecom-auth
+          predicates:
+            - Host=auth.gulimall.com

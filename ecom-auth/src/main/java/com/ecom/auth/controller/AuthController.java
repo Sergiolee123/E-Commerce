@@ -17,7 +17,6 @@ public class AuthController {
 
     @GetMapping("/email/sendcode")
     public R sendCode(@RequestParam("email") String email) {
-        authService.sendVerifyCodeToEmail(email);
-        return R.ok();
+        return authService.sendVerifyCodeToEmail(email);
     }
 }

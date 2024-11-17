@@ -1,5 +1,7 @@
 package com.ecom.auth.service;
 
+import com.ecom.common.utils.R;
+
 public interface AuthService {
-    void sendVerifyCodeToEmail(String email);
+    R sendVerifyCodeToEmail(String email);
 }

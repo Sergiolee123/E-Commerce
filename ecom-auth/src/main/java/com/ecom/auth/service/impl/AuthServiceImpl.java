@@ -21,6 +21,7 @@ public class AuthServiceImpl implements AuthService {
     private final ThirdPartFeignService thirdPartFeignService;
     private final StringRedisTemplate redisTemplate;
     private final ThreadPoolExecutor executor;
+    private final int expire = 5;
 
     public AuthServiceImpl(ThirdPartFeignService thirdPartFeignService, StringRedisTemplate redisTemplate, ThreadPoolExecutor executor) {
         this.thirdPartFeignService = thirdPartFeignService;
@@ -31,12 +32,13 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public R sendVerifyCodeToEmail(String email) {
         String key = AuthConstant.EMAIL_CODE_CACHE_PREFIX + email;
-        if(Boolean.TRUE.equals(redisTemplate.hasKey(key))) {
+        Long expireRemindSeconds = redisTemplate.getExpire(key, TimeUnit.SECONDS);
+        if(expireRemindSeconds != null && expireRemindSeconds > 0 && expireRemindSeconds > (expire - 1) * 60) {
             return R.error(BizCodeEnum.VALID_EXCEPTION);
         }
         CompletableFuture.runAsync(() -> {
             String verificationCode = AuthUtil.getVerificationCode();
-            redisTemplate.opsForValue().set(key, verificationCode, 5, TimeUnit.MINUTES);
+            redisTemplate.opsForValue().set(key, verificationCode, expire, TimeUnit.MINUTES);
             thirdPartFeignService.sendCode(email, verificationCode);
             log.info("send verification code success to email: {}", email);
         }, executor);

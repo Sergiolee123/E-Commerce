@@ -1,12 +1,18 @@
 package com.ecom.auth.service.impl;
 
+import com.ecom.auth.feign.MemberFeignService;
 import com.ecom.auth.feign.ThirdPartFeignService;
 import com.ecom.auth.service.AuthService;
 import com.ecom.auth.util.AuthUtil;
+import com.ecom.auth.vo.MemberLoginVo;
+import com.ecom.auth.vo.MemberRegistryVo;
+import com.ecom.auth.vo.UserLoginVo;
+import com.ecom.auth.vo.UserRegistryVo;
 import com.ecom.common.constant.AuthConstant;
 import com.ecom.common.exception.BizCodeEnum;
 import com.ecom.common.utils.R;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -19,12 +25,14 @@ import java.util.concurrent.TimeUnit;
 public class AuthServiceImpl implements AuthService {
 
     private final ThirdPartFeignService thirdPartFeignService;
+    private final MemberFeignService memberFeignService;
     private final StringRedisTemplate redisTemplate;
     private final ThreadPoolExecutor executor;
     private final int expire = 5;
 
-    public AuthServiceImpl(ThirdPartFeignService thirdPartFeignService, StringRedisTemplate redisTemplate, ThreadPoolExecutor executor) {
+    public AuthServiceImpl(ThirdPartFeignService thirdPartFeignService, MemberFeignService memberFeignService, StringRedisTemplate redisTemplate, ThreadPoolExecutor executor) {
         this.thirdPartFeignService = thirdPartFeignService;
+        this.memberFeignService = memberFeignService;
         this.redisTemplate = redisTemplate;
         this.executor = executor;
     }
@@ -43,5 +51,26 @@ public class AuthServiceImpl implements AuthService {
             log.info("send verification code success to email: {}", email);
         }, executor);
         return R.ok();
+    }
+
+    @Override
+    public R registry(UserRegistryVo userRegistryVo) {
+        String key = AuthConstant.EMAIL_CODE_CACHE_PREFIX + userRegistryVo.getEmail();
+        if(!userRegistryVo.getCode().equals(redisTemplate.opsForValue().get(key))){
+            return R.error(BizCodeEnum.VALID_EXCEPTION);
+        }
+
+        redisTemplate.delete(key);
+
+        MemberRegistryVo vo = new MemberRegistryVo();
+        BeanUtils.copyProperties(userRegistryVo, vo);
+        return memberFeignService.registry(vo);
+    }
+
+    @Override
+    public R login(UserLoginVo userLoginVo) {
+        MemberLoginVo vo = new MemberLoginVo();
+        BeanUtils.copyProperties(userLoginVo, vo);
+        return memberFeignService.login(vo);
     }
 }

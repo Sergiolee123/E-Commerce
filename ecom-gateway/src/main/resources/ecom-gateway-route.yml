@@ -65,3 +65,8 @@ spring:
           uri: lb://ecom-auth
           predicates:
             - Host=auth.gulimall.com
+
+        - id: gulimall-cart-route
+          uri: lb://ecom-cart
+          predicates:
+            - Host=cart.gulimall.com

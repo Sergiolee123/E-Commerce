@@ -26,6 +26,7 @@
         <module>ecom-third-party</module>
         <module>ecom-search</module>
         <module>ecom-auth</module>
+        <module>ecom-cart</module>
     </modules>
 
 

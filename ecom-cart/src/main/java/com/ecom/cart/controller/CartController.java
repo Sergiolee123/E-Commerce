@@ -26,13 +26,13 @@ public class CartController {
     }
 
     @PostMapping
-    public R updateCart(@RequestBody @Valid @NotNull Cart cart, HttpServletRequest request, HttpServletResponse response) {
-        return cartService.updateCart(cart, request, response);
+    public R addCart(@RequestBody @Valid @NotNull Cart cart, HttpServletRequest request, HttpServletResponse response) {
+        return cartService.createCart(cart, request, response);
     }
 
     @PutMapping
-    public R addCart(@RequestBody @Valid @NotNull Cart cart, HttpServletRequest request, HttpServletResponse response) {
-        return cartService.createCart(cart, request, response);
+    public R updateCart(@RequestBody @Valid @NotNull Cart cart, HttpServletRequest request, HttpServletResponse response) {
+        return cartService.updateCart(cart, request, response);
     }
 
     @DeleteMapping

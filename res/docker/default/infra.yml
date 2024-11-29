@@ -16,6 +16,10 @@ services:
       - mysql_log:/var/log/mysql
       - mysql_config:/etc/mysql/conf.d
       - ./../../sql:/docker-entrypoint-initdb.d
+    deploy:
+      resources:
+        limits:
+          memory: 1G
 
   redis:
     image: redis:7.4.0
@@ -26,6 +30,10 @@ services:
       - redis_data:/data
       - redis_config:/etc/redis/redis_default.conf
     command: redis-server /etc/redis/redis_default.conf --appendonly yes
+    deploy:
+      resources:
+        limits:
+          memory: 1G
 
   elasticsearch:
     image: elasticsearch:7.4.2
@@ -44,7 +52,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 16G
+          memory: 3G
 
   kibana:
     image: kibana:7.4.2
@@ -55,6 +63,25 @@ services:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
     volumes:
       - kibana_config:/usr/share/kibana/config
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+  rabbitmq:
+    image: rabbitmq:management
+    container_name: ecom_rabbitmq
+    ports:
+      - 5671:5671
+      - 5672:5672
+      - 4369:4369
+      - 25672:25672
+      - 15671:15671
+      - 15672:15672
+    deploy:
+      resources:
+        limits:
+          memory: 1G
 
 volumes:
   mysql_data: {}

@@ -11,6 +11,10 @@ services:
       - MODE=standalone
     volumes:
       - nacos-data:/home/nacos
+    deploy:
+      resources:
+        limits:
+          memory: 2G
 
 volumes:
   nacos-data: {}

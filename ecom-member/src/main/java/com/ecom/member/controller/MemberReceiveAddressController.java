@@ -1,19 +1,15 @@
 package com.ecom.member.controller;
 
-import java.util.Arrays;
-import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.ecom.member.entity.MemberReceiveAddressEntity;
-import com.ecom.member.service.MemberReceiveAddressService;
 import com.ecom.common.utils.PageUtils;
 import com.ecom.common.utils.R;
+import com.ecom.member.entity.MemberReceiveAddressEntity;
+import com.ecom.member.service.MemberReceiveAddressService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 
 
@@ -29,6 +25,11 @@ import com.ecom.common.utils.R;
 public class MemberReceiveAddressController {
     @Autowired
     private MemberReceiveAddressService memberReceiveAddressService;
+
+    @GetMapping("/{memberId}/addresses")
+    public List<MemberReceiveAddressEntity> listByMemberId(@PathVariable Long memberId) {
+        return memberReceiveAddressService.listByMemberId(memberId);
+    }
 
     /**
      * 列表

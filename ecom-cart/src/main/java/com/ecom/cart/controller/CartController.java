@@ -5,8 +5,6 @@ import com.ecom.cart.vo.Cart;
 import com.ecom.common.utils.R;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -21,22 +19,22 @@ public class CartController {
     }
 
     @GetMapping
-    public R cartList(HttpServletRequest request) {
-        return cartService.getCart(request);
+    public R cartList() {
+        return cartService.getCart();
     }
 
     @PostMapping
-    public R addCart(@RequestBody @Valid @NotNull Cart cart, HttpServletRequest request, HttpServletResponse response) {
-        return cartService.createCart(cart, request, response);
+    public R addCart(@RequestBody @Valid @NotNull Cart cart) {
+        return cartService.createCart(cart);
     }
 
     @PutMapping
-    public R updateCart(@RequestBody @Valid @NotNull Cart cart, HttpServletRequest request, HttpServletResponse response) {
-        return cartService.updateCart(cart, request, response);
+    public R updateCart(@RequestBody @Valid @NotNull Cart cart) {
+        return cartService.updateCart(cart);
     }
 
     @DeleteMapping
-    public R deleteCart(HttpServletRequest request, HttpServletResponse response) {
-        return cartService.deleteCart(request, response);
+    public R deleteCart() {
+        return cartService.deleteCart();
     }
 }

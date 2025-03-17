@@ -1,19 +1,16 @@
 package com.ecom.order.controller;
 
-import java.util.Arrays;
-import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.ecom.order.entity.OrderEntity;
-import com.ecom.order.service.OrderService;
 import com.ecom.common.utils.PageUtils;
 import com.ecom.common.utils.R;
+import com.ecom.order.entity.OrderEntity;
+import com.ecom.order.service.OrderService;
+import com.ecom.order.vo.OrderConfirmVo;
+import com.ecom.order.vo.OrderSubmitVo;
+import com.ecom.order.vo.SubmitOrderResponseVo;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Arrays;
+import java.util.Map;
 
 
 
@@ -27,8 +24,25 @@ import com.ecom.common.utils.R;
 @RestController
 @RequestMapping("order/order")
 public class OrderController {
-    @Autowired
-    private OrderService orderService;
+    private final OrderService orderService;
+
+    public OrderController(OrderService orderService) {
+        this.orderService = orderService;
+    }
+
+    @GetMapping("/toTrade")
+    public R toTrade() {
+        OrderConfirmVo orderConfirmVo = orderService.comfirmOrder();
+        return R.ok().put("data", orderConfirmVo);
+    }
+
+    @PostMapping("/submitOrder")
+    public R submitOrder(@RequestBody OrderSubmitVo orderSubmitVo) {
+        SubmitOrderResponseVo vo = orderService.submitOrder(orderSubmitVo);
+        return R.ok().put("data", vo);
+    }
+
+
 
     /**
      * 列表

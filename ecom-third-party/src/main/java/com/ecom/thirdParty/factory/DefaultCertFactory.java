@@ -11,7 +11,7 @@ public enum DefaultCertFactory {
     DefaultCertFactory(){
         intelliJCredential = new IntelliJCredentialBuilder()
                 // KeePass configuration isrequired only for Windows. No configuration needed for Linux / Mac.
-                .keePassDatabasePath("C:\\Users\\user\\AppData\\Roaming\\JetBrains\\IntelliJIdea2024.1\\c.kdbx")
+                .keePassDatabasePath("C:\\Users\\user\\AppData\\Roaming\\JetBrains\\IntelliJIdea2024.2\\c.kdbx")
                 .build();
     }
 

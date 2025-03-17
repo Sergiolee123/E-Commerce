@@ -37,6 +37,13 @@ spring:
           filters:
             - RewritePath=/api/?(?<segment>.*), /$\{segment}
 
+        - id: order_route
+          uri: lb://ecom-order
+          predicates:
+            - Path=/api/order/**
+          filters:
+            - RewritePath=/api/?(?<segment>.*), /$\{segment}
+
         - id: third_party_route
           uri: lb://ecom-third-party
           predicates:

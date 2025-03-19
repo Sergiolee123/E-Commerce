@@ -11,20 +11,18 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebConfig {
 
     @Bean
-    public WebMvcConfigurer corsConfigurer() {
+    public WebMvcConfigurer corsConfigurer(CartInterceptor cartInterceptor) {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
                         .allowedMethods("*")
-                        .allowedHeaders("*")
-                        .allowCredentials(false)
-                        .exposedHeaders("Content-Disposition");
+                        .allowedHeaders("*");
             }
 
             @Override
             public void addInterceptors(InterceptorRegistry registry) {
-                registry.addInterceptor(new CartInterceptor()).addPathPatterns("/cart");
+                registry.addInterceptor(cartInterceptor).addPathPatterns("/cart");
             }
         };
     }

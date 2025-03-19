@@ -11,8 +11,12 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * if @ResponseBody or ResponseEntity is being used, nor postHandle and afterCompletion method can modify the response.
+ */
 @Slf4j
 @Component
 public class CartInterceptor implements HandlerInterceptor {
@@ -26,11 +30,14 @@ public class CartInterceptor implements HandlerInterceptor {
         return true;
     }
 
+    /**
+     * <herf a="https://docs.spring.io/spring-framework/docs/5.2.23.RELEASE/spring-framework-reference/web.html#mvc-handlermapping-interceptor">Why cookie cannot be set while using HandlerInterceptor with @ResponseBody and ResponseEntity</herf>
+     */
     @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
         Cookie userKeyCookie = new Cookie(CartConstant.USER_KEY_COOKIE_NAME, threadLocal.get().getUserKey());
-        userKeyCookie.setMaxAge(24 * 60 * 60);
-        response.addCookie(userKeyCookie);
+        userKeyCookie.setMaxAge(24 * 60 * 60 * 30);
+        response.addCookie(userKeyCookie); // this code will not work if @ResponseBody and ResponseEntity is being used
     }
 
     @Override
@@ -40,7 +47,7 @@ public class CartInterceptor implements HandlerInterceptor {
 
     private String getUserKey(HttpServletRequest request) {
         String userKey = null;
-        for (Cookie cookie : request.getCookies()) {
+        for (Cookie cookie : Optional.ofNullable(request.getCookies()).orElse(new Cookie[]{})) {
             if (Objects.equals(cookie.getName(), CartConstant.USER_KEY_COOKIE_NAME)) {
                 userKey = cookie.getValue();
             }

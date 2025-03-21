@@ -35,9 +35,10 @@ public class CartInterceptor implements HandlerInterceptor {
      */
     @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
-        Cookie userKeyCookie = new Cookie(CartConstant.USER_KEY_COOKIE_NAME, threadLocal.get().getUserKey());
+        // below code will not work if @ResponseBody and ResponseEntity is being used in the controller layer
+ /*       Cookie userKeyCookie = new Cookie(CartConstant.USER_KEY_COOKIE_NAME, threadLocal.get().getUserKey());
         userKeyCookie.setMaxAge(24 * 60 * 60 * 30);
-        response.addCookie(userKeyCookie); // this code will not work if @ResponseBody and ResponseEntity is being used
+        response.addCookie(userKeyCookie);*/
     }
 
     @Override
